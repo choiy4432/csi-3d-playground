@@ -92,25 +92,33 @@ PLAY_SESSION 생성 (anon_token)
 
 ```
 src/
-├── SceneWrapper.jsx    # Canvas + Physics 래퍼, evidences 상태 관리, HUD
-├── CrimeScene.jsx      # evidences.map() → EvidenceObject 배치
-├── EvidenceObject.jsx  # GLB 로드, Rapier 고정 콜라이더, hover/채증 비주얼
-├── Room.jsx            # 방 기하(바닥·천장·4벽) + Rapier 벽 콜라이더
-├── PlayerController.jsx# WASD 이동, Pointer Lock, 클릭 채증 처리
+├── SceneWrapper.jsx     # Canvas + Physics 래퍼, evidences 상태 관리, HUD, dev 모드
+├── CrimeScene.jsx       # evidences.map() → EvidenceObject 배치
+├── EvidenceObject.jsx   # GLB 로드, Rapier 고정 콜라이더, hover/채증 비주얼
+├── Room.jsx             # Room01.glb trimesh 콜라이더, 조명 기구 자동 감지
+├── PlayerController.jsx # WASD 이동, Pointer Lock, 클릭 채증 처리, forwardRef reset()
+├── MiniGame.jsx         # 타이밍바 / 연타 미니게임 (window 이벤트, Pointer Lock 유지)
+├── Hand.jsx             # SVG 라텍스 장갑, grab 애니메이션
+├── DebugLight.jsx       # pointLight + debug 구체 래퍼 (재사용)
 ├── components/
-│   ├── interaction/    # 17개 모듈 (COL-01~10, ANL-01~04, INF-01~03)
+│   ├── interaction/     # 17개 모듈 (COL-01~10, ANL-01~04, INF-01~03)
 │   └── ui/             # 2D UI (HUD, 브리핑, 리포트)
+├── __tests__/
+│   ├── MiniGame.test.jsx # vitest — 37개 판정 경계값 테스트
+│   └── setup.js
 ├── hooks/
-├── types/              # 타입 정의 — type-checker 에이전트 참고
-└── constants/          # grade_band, 슬롯 순서 등
+├── types/               # 타입 정의 — type-checker 에이전트 참고
+└── constants/           # grade_band, 슬롯 순서 등
 
 public/
-└── models/             # GLB 파일 ({evidenceType}.glb)
+└── models/
+    ├── room/Room01.glb  # 방 GLB (trimesh 콜라이더)
+    └── {evidenceType}.glb
 
 backend/
 ├── routers/
-├── services/           # 슬롯 생성·검증
-└── schemas/            # Pydantic 모델
+├── services/            # 슬롯 생성·검증
+└── schemas/             # Pydantic 모델
 ```
 
 ---
@@ -131,7 +139,7 @@ backend/
 
 ### 충돌 시스템
 - `<Physics gravity={[0,0,0]}>` — 중력 없는 실내 씬
-- 방 바닥·천장·4벽: `RigidBody type="fixed"` + `CuboidCollider` (시각 메시와 분리)
+- 방: `RigidBody type="fixed" colliders="trimesh"` + Room01.glb `<primitive>` — GLB 메시 형태 그대로 충돌
 - 증거물: `RigidBody type="fixed"` + `CuboidCollider` — 플레이어가 통과 불가
 - 플레이어: `RigidBody type="dynamic"` + `CapsuleCollider`, `gravityScale=0`, `linearDamping=20`
 
@@ -140,6 +148,7 @@ backend/
 - `useFrame` 안에서 `raycaster.setFromCamera({x:0, y:0}, camera)`로 매 프레임 수동 레이캐스트
 - hover 대상은 `userData.evidenceId`로 식별; GLB 모델 메시는 `raycast = () => {}`로 레이캐스트 제외
 - 클릭도 R3F `onClick`이 아닌 PlayerController의 native `click` 핸들러에서 처리 (`currentHover` ref 참조)
+- 미니게임 중에는 `pausedRef.current`로 포인터락 요청 및 interact 모두 차단
 
 ### 채증 거리 제한
 - `INTERACT_DIST = 2.5` (PlayerController 상수) — 이 거리 안에서만 클릭 채증 가능
@@ -147,9 +156,41 @@ backend/
 
 ### 증거물 데이터 (SceneWrapper)
 ```js
-{ id, file, position: [x,y,z], colliderSize: [w,h,d], collected: false }
+{ id, file, position: [x,y,z], colliderSize: [w,h,d], collected: false,
+  miniGame: { type: 'timing'|'rapidclick', label, difficulty?, target?, time? } }
 ```
 `colliderSize`는 물체별로 개별 조정 — GLB 모델 크기에 맞춰 직접 튜닝.
+
+### 미니게임 (MiniGame.jsx)
+- `TimingGame` — rAF 슬라이딩 바, difficulty(easy/normal/hard)로 속도·구간 크기 결정
+- `RapidClickGame` — setInterval 카운트다운, target 클릭 수 도달 시 성공
+- 입력: `window mousedown` / `keydown` (Pointer Lock 중에도 동작)
+- ESC → onFail / 결과 후 550ms 딜레이 → 자동 닫힘
+- 미니게임 중 Pointer Lock 해제 없이 overlay `pointerEvents: 'none'`으로 유지
+
+### 조명 시스템
+- 전역 조명: `ambientLight` + `DebugLight` ×3 (SceneWrapper 고정 좌표)
+- 찬장 조명: Room01.glb traverse → `/light/i` 이름 emissive 메시 자동 감지 → `DebugLight` 배치
+- GLB 내장 라이트: `obj.isLight` 감지, isolation 모드에서 intensity=0으로 토글 (원본은 `userData._origIntensity` 보존)
+- `DebugLight.jsx` — pointLight + breath 구체 래퍼; `debug` prop으로 구체 토글, `isolated` prop으로 라이트 끄기
+
+### 개발자 도구 (DEV MODE)
+단축키:
+- `1` — DEV 모드 토글: Rapier 콜라이더 시각화 + OrbitControls 자유 시점, OFF 시 스폰 지점 리스폰
+- `2` — 라이트 아이솔레이션: 전역 조명 끄고 조명 기구 구체만 표시 (DEV 모드일 때만)
+
+OrbitControls: 좌클릭=회전, 우클릭=pan, 휠=줌 (DEV 모드 중 포인터락 비활성)
+
+디버그 구체 색상 범례:
+- 노란 와이어프레임 — Rapier 콜라이더
+- RGB 축 — RigidBody 로컬 좌표계
+- 민트(`#00ffcc`) — `DebugLight` (emissive 기반 또는 전역 pointLight)
+- 주황(`#ff6600`) — GLB 내장 라이트 노드
+
+PlayerController — `forwardRef` + `useImperativeHandle`로 `reset()` 노출:
+```js
+playerRef.current.reset()  // 위치 [0,BODY_Y,0], linvel 0, yaw/pitch 0으로 리셋
+```
 
 ---
 

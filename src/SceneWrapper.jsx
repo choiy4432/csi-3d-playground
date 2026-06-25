@@ -7,6 +7,7 @@ import Hand from './Hand'
 import MiniGame from './MiniGame'
 import Room from './Room'
 import PlayerController from './PlayerController'
+import DebugLight from './DebugLight'
 
 const INITIAL_EVIDENCES = [
   { id: 1, file: 'Brush.glb',        position: [ 2,   0,  1  ], colliderSize: [0.5, 1.2, 0.5], collected: false,
@@ -19,14 +20,33 @@ const INITIAL_EVIDENCES = [
     miniGame: { type: 'timing',     label: '문서 증거 채취',       difficulty: 'easy' } },
 ]
 
+function Kbd({ children }) {
+  return (
+    <span style={{
+      display: 'inline-block', background: '#2a2a2a', border: '1px solid #444',
+      borderRadius: 3, padding: '0 5px', marginRight: 6, fontSize: 11, color: '#eee',
+    }}>{children}</span>
+  )
+}
+
+function Dot({ color }) {
+  return (
+    <span style={{
+      display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+      background: color, marginRight: 6, verticalAlign: 'middle',
+    }} />
+  )
+}
+
 export default function SceneWrapper() {
   const [evidences, setEvidences]       = useState(INITIAL_EVIDENCES)
   const [locked, setLocked]             = useState(false)
   const [hasStarted, setHasStarted]     = useState(false)
   const [hoveredId, setHoveredId]       = useState(null)
   const [inRange, setInRange]           = useState(false)
-  const [debugMode, setDebugMode]         = useState(false)
+  const [debugMode, setDebugMode]           = useState(false)
   const [lightIsolation, setLightIsolation] = useState(false)
+  const [hintCollapsed, setHintCollapsed]   = useState(false)
   const [grabTrigger, setGrabTrigger]     = useState(0)
   const [activeMiniGame, setActiveMiniGame] = useState(null) // evidence object | null
   const playerRef = useRef()
@@ -132,6 +152,58 @@ export default function SceneWrapper() {
         </div>
       )}
 
+      {/* DEV 힌트 패널 */}
+      {debugMode && (
+        <div style={{
+          position: 'absolute', bottom: 16, left: 16, zIndex: 10,
+          fontFamily: 'monospace', fontSize: 12, lineHeight: '1.7',
+          color: '#ccc', background: 'rgba(0,0,0,0.82)',
+          border: '1px solid #333', borderRadius: 8,
+          minWidth: 240, overflow: 'hidden',
+        }}>
+          {/* 헤더 (항상 표시) */}
+          <div
+            onClick={() => setHintCollapsed(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 12px', cursor: 'pointer', userSelect: 'none',
+              borderBottom: hintCollapsed ? 'none' : '1px solid #2a2a2a',
+            }}
+          >
+            <span style={{ color: '#00ffcc', fontWeight: 'bold', letterSpacing: 1 }}>◈ DEV MODE</span>
+            <span style={{ color: '#666', fontSize: 14, marginLeft: 16 }}>
+              {hintCollapsed ? '▲' : '▼'}
+            </span>
+          </div>
+
+          {/* 본문 (접히면 숨김) */}
+          {!hintCollapsed && (
+            <div style={{ padding: '8px 12px 10px' }}>
+              <div style={{ color: '#555', fontSize: 10, marginBottom: 6 }}>─── 단축키 ───</div>
+              <div><Kbd>1</Kbd> DEV 모드 끄기 · 스폰 지점 리스폰</div>
+              <div>
+                <Kbd>2</Kbd> 라이트 아이솔레이션&nbsp;
+                <span style={{ color: lightIsolation ? '#fff' : '#555' }}>
+                  {lightIsolation ? '● ON' : '○ OFF'}
+                </span>
+              </div>
+
+              <div style={{ color: '#555', fontSize: 10, margin: '8px 0 4px' }}>─── 시점 조작 ───</div>
+              <div><Kbd>좌클릭</Kbd> 드래그 — 회전</div>
+              <div><Kbd>우클릭</Kbd> 드래그 — 이동 (pan)</div>
+              <div><Kbd>휠</Kbd> 줌</div>
+
+              <div style={{ color: '#555', fontSize: 10, margin: '8px 0 4px' }}>─── 오브젝트 범례 ───</div>
+              <div><Dot color="#ffee44" /> 노란 와이어프레임 — Rapier 콜라이더</div>
+              <div style={{ paddingLeft: 14, color: '#888' }}>RGB 축 — RigidBody 로컬 좌표계</div>
+              <div><Dot color="#aa44ff" /> 보라 구체 — 전역 pointLight (씬 전체조명)</div>
+              <div><Dot color="#00ffcc" /> 민트 구체 — GLB emissive 기반 pointLight</div>
+              <div><Dot color="#ff6600" /> 주황 구체 — GLB 내장 라이트 노드</div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 손 */}
       {locked && <Hand grabTrigger={grabTrigger} />}
 
@@ -161,9 +233,9 @@ export default function SceneWrapper() {
 
       <Canvas camera={{ fov: 75 }}>
         <ambientLight intensity={lightIsolation ? 0.02 : 0.4} />
-        <pointLight position={[0, 3.5, 0]} intensity={lightIsolation ? 0 : 15} decay={2} />
-        <pointLight position={[3, 3, 3]}   intensity={lightIsolation ? 0 : 8}  decay={2} color="#ffe8c0" />
-        <pointLight position={[-3, 3, -3]} intensity={lightIsolation ? 0 : 8}  decay={2} color="#ffe8c0" />
+        <DebugLight position={[0, 3.5, 0]}  intensity={15} debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" />
+        <DebugLight position={[3, 3, 3]}    intensity={8}  debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" color="#ffe8c0" />
+        <DebugLight position={[-3, 3, -3]}  intensity={8}  debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" color="#ffe8c0" />
         {debugMode && (
           <OrbitControls
             makeDefault
