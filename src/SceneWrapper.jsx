@@ -20,6 +20,90 @@ const INITIAL_EVIDENCES = [
     miniGame: { type: 'timing',     label: '문서 증거 채취',       difficulty: 'easy' } },
 ]
 
+const DEFAULT_LIGHTING = {
+  ambient: 0.4,
+  points: [
+    { intensity: 15, color: '#ffffff' },
+    { intensity: 8,  color: '#ffe8c0' },
+    { intensity: 8,  color: '#ffe8c0' },
+  ],
+}
+
+const SCENE_SCENARIOS = [
+  {
+    id: 'night',
+    label: '야간 수사',
+    lighting: {
+      ambient: 0.03,
+      points: [
+        { intensity: 3,  color: '#2233aa' },
+        { intensity: 1.5, color: '#112266' },
+        { intensity: 1.5, color: '#112266' },
+      ],
+      roomLight: { color: '#1122aa', intensity: 3 },
+    },
+    override: {
+      brokenGlass: { emissive: '#0011aa', emissiveIntensity: 0.6 },
+      floor:       { emissive: '#000011', emissiveIntensity: 0.0, color: '#050308' },
+      roofGlass:   { opacity: 0.05 },
+    },
+  },
+  {
+    id: 'fresh_crime',
+    label: '범행 직후',
+    lighting: {
+      ambient: 0.06,
+      points: [
+        { intensity: 6,  color: '#ff2200' },
+        { intensity: 3,  color: '#aa1100' },
+        { intensity: 3,  color: '#aa1100' },
+      ],
+      roomLight: { color: '#aa1100', intensity: 4 },
+    },
+    override: {
+      brokenGlass: { emissive: '#ff2200', emissiveIntensity: 2.5 },
+      floor:       { emissive: '#1a0000', emissiveIntensity: 0.4 },
+      roofGlass:   { opacity: 0.15, emissive: '#330000', emissiveIntensity: 0.8 },
+    },
+  },
+  {
+    id: 'forensic',
+    label: '법의학 조명',
+    lighting: {
+      ambient: 0.8,
+      points: [
+        { intensity: 25, color: '#ddeeff' },
+        { intensity: 14, color: '#cceeff' },
+        { intensity: 14, color: '#cceeff' },
+      ],
+      roomLight: { color: '#cceeff', intensity: 18 },
+    },
+    override: {
+      brokenGlass: { emissive: '#aaddff', emissiveIntensity: 1.5 },
+      floor:       { emissive: '#112233', emissiveIntensity: 0.3 },
+      roofGlass:   { opacity: 0.8, emissive: '#aaddff', emissiveIntensity: 0.5 },
+    },
+  },
+  {
+    id: 'tense',
+    label: '긴장감',
+    lighting: {
+      ambient: 0.05,
+      points: [
+        { intensity: 5,  color: '#ff4400' },
+        { intensity: 2,  color: '#aa2200' },
+        { intensity: 2,  color: '#aa2200' },
+      ],
+      roomLight: { color: '#aa3300', intensity: 3 },
+    },
+    override: {
+      brokenGlass: { emissive: '#ff6600', emissiveIntensity: 2 },
+      floor:       { emissive: '#220500', emissiveIntensity: 0.5 },
+      roofGlass:   { opacity: 0.08, emissive: '#331100', emissiveIntensity: 0.5 },
+    },
+  },
+]
+
 function Kbd({ children }) {
   return (
     <span style={{
@@ -47,6 +131,7 @@ export default function SceneWrapper() {
   const [debugMode, setDebugMode]           = useState(false)
   const [lightIsolation, setLightIsolation] = useState(false)
   const [hintCollapsed, setHintCollapsed]   = useState(false)
+  const [activeScenario, setActiveScenario] = useState(null)
   const [grabTrigger, setGrabTrigger]     = useState(0)
   const [activeMiniGame, setActiveMiniGame] = useState(null) // evidence object | null
   const playerRef = useRef()
@@ -193,6 +278,27 @@ export default function SceneWrapper() {
               <div><Kbd>우클릭</Kbd> 드래그 — 이동 (pan)</div>
               <div><Kbd>휠</Kbd> 줌</div>
 
+              <div style={{ color: '#555', fontSize: 10, margin: '8px 0 6px' }}>─── 생성층 씬 시나리오 ───</div>
+              {SCENE_SCENARIOS.map((s) => {
+                const active = activeScenario === s.id
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setActiveScenario(active ? null : s.id)}
+                    style={{
+                      display: 'block', width: '100%', padding: '4px 8px', marginBottom: 4,
+                      background: active ? '#1a3a1a' : '#111',
+                      border: `1px solid ${active ? '#3a7a3a' : '#333'}`,
+                      borderRadius: 4, color: active ? '#66ff66' : '#888',
+                      fontFamily: 'monospace', fontSize: 11, cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    {active ? '● ' : '○ '}{s.label}
+                  </button>
+                )
+              })}
+
               <div style={{ color: '#555', fontSize: 10, margin: '8px 0 4px' }}>─── 오브젝트 범례 ───</div>
               <div><Dot color="#ffee44" /> 노란 와이어프레임 — Rapier 콜라이더</div>
               <div style={{ paddingLeft: 14, color: '#888' }}>RGB 축 — RigidBody 로컬 좌표계</div>
@@ -232,10 +338,16 @@ export default function SceneWrapper() {
 
 
       <Canvas camera={{ fov: 75 }}>
-        <ambientLight intensity={lightIsolation ? 0.02 : 0.4} />
-        <DebugLight position={[0, 3.5, 0]}  intensity={15} debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" />
-        <DebugLight position={[3, 3, 3]}    intensity={8}  debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" color="#ffe8c0" />
-        <DebugLight position={[-3, 3, -3]}  intensity={8}  debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" color="#ffe8c0" />
+        {(() => {
+          const lighting = SCENE_SCENARIOS.find(s => s.id === activeScenario)?.lighting ?? DEFAULT_LIGHTING
+          const pts = lighting.points
+          return (<>
+            <ambientLight intensity={lightIsolation ? 0.02 : lighting.ambient} />
+            <DebugLight position={[0, 3.5, 0]}  intensity={pts[0].intensity} color={pts[0].color} debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" />
+            <DebugLight position={[3, 3, 3]}    intensity={pts[1].intensity} color={pts[1].color} debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" />
+            <DebugLight position={[-3, 3, -3]}  intensity={pts[2].intensity} color={pts[2].color} debug={debugMode} isolated={lightIsolation} debugColor="#aa44ff" />
+          </>)
+        })()}
         {debugMode && (
           <OrbitControls
             makeDefault
@@ -243,7 +355,16 @@ export default function SceneWrapper() {
           />
         )}
         <Physics gravity={[0, 0, 0]} debug={debugMode}>
-          <Room debug={debugMode} isolated={lightIsolation} />
+          {(() => {
+            const scenario = SCENE_SCENARIOS.find(s => s.id === activeScenario)
+            return <Room
+              debug={debugMode}
+              isolated={lightIsolation}
+              sceneOverride={scenario?.override ?? null}
+              lightColor={scenario?.lighting.roomLight?.color ?? '#ffe4a0'}
+              lightIntensity={scenario?.lighting.roomLight?.intensity ?? 12}
+            />
+          })()}
           <CrimeScene evidences={evidences} hoveredId={hoveredId} inRange={inRange} />
           <PlayerController
             ref={playerRef}
