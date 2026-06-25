@@ -4,11 +4,19 @@ import { RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 import DebugLight from './DebugLight'
 
-export default function Room({ debug = false, isolated = false }) {
+export default function Room({ debug = false, isolated = false, sceneOverride = null, lightColor = '#ffe4a0', lightIntensity = 12 }) {
   const { scene } = useGLTF('/models/room/Room01.glb')
 
-  // GLB 내장 라이트 노드 수집 (KHR_lights_punctual)
+  // GLB 내장 라이트 노드 수집 + 깨진 유리 랜덤 위치 (Rapier 초기화 전에 반영)
   const glbLights = useMemo(() => {
+    scene.traverse((obj) => {
+      if (obj.name === 'Broken_glass') {
+        const x = -2.5 + Math.random() * 5.0
+        const z = -3.2 + Math.random() * 6.4
+        obj.position.set(x, obj.position.y, z)
+      }
+    })
+
     const lights = []
     scene.traverse((obj) => {
       if (obj.isLight) lights.push(obj)
@@ -18,6 +26,51 @@ export default function Room({ debug = false, isolated = false }) {
     }
     return lights
   }, [scene])
+
+  // 생성층 씬 오버라이드
+  // Broken_glass는 glass1과 머티리얼을 공유하므로 최초 적용 시 clone해서 분리
+  useEffect(() => {
+    const TARGETS = {
+      Broken_glass: 'brokenGlass',
+      Floor:        'floor',
+      Roof_Glass:   'roofGlass',
+    }
+    scene.traverse((obj) => {
+      if (!obj.isMesh) return
+      const key = TARGETS[obj.name]
+      if (!key) return
+
+      // 최초 적용 시 clone으로 머티리얼 분리 (공유 머티리얼 보호)
+      if (sceneOverride?.[key] && !obj.userData._matCloned) {
+        obj.material = obj.material.clone()
+        obj.userData._matCloned = true
+      }
+
+      const mat = obj.material
+      if (sceneOverride?.[key]) {
+        if (!mat.userData._orig) {
+          mat.userData._orig = {
+            color:             mat.color.clone(),
+            emissive:          mat.emissive.clone(),
+            emissiveIntensity: mat.emissiveIntensity,
+            opacity:           mat.opacity,
+          }
+        }
+        const ov = sceneOverride[key]
+        if (ov.color)                           mat.color.set(ov.color)
+        if (ov.emissive)                        mat.emissive.set(ov.emissive)
+        if (ov.emissiveIntensity !== undefined) mat.emissiveIntensity = ov.emissiveIntensity
+        if (ov.opacity !== undefined)           mat.opacity = ov.opacity
+      } else if (mat.userData._orig) {
+        const o = mat.userData._orig
+        mat.color.copy(o.color)
+        mat.emissive.copy(o.emissive)
+        mat.emissiveIntensity = o.emissiveIntensity
+        mat.opacity           = o.opacity
+        delete mat.userData._orig
+      }
+    })
+  }, [scene, sceneOverride])
 
   // isolation 모드: GLB 내장 라이트 끄기 / 켜기
   useEffect(() => {
@@ -67,9 +120,9 @@ export default function Room({ debug = false, isolated = false }) {
         <DebugLight
           key={pos.join(',')}
           position={[pos[0], pos[1] - 0.15, pos[2]]}
-          intensity={12}
+          intensity={lightIntensity}
           distance={3.5}
-          color="#ffe4a0"
+          color={lightColor}
           debug={debug}
           isolated={isolated}
           debugColor="#00ffcc"
