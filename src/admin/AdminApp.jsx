@@ -1,12 +1,20 @@
 import { useState } from 'react'
+import initialData from '../data/fixedLayer.json'
+import ScenarioPage from './pages/ScenarioPage.jsx'
+import NpcPage from './pages/NpcPage.jsx'
+import SolutionPage from './pages/SolutionPage.jsx'
+import EvidencePage from './pages/EvidencePage.jsx'
+import SlotsPage from './pages/SlotsPage.jsx'
+
+const STORAGE_KEY = 'csi_fixedLayer'
 
 const NAV_ITEMS = [
-  { key: 'scenario',   label: '📋 시나리오 정보' },
-  { key: 'npc',        label: '👥 NPC 관리' },
-  { key: 'solution',   label: '🎯 정답 설정' },
-  { key: 'evidence',   label: '🔍 증거물 카탈로그' },
-  { key: 'slots',      label: '⚙️ 생성 슬롯' },
-  { key: 'preview',    label: '👁️ 미리보기' },
+  { key: 'scenario', label: '📋 시나리오 정보' },
+  { key: 'npc',      label: '👥 NPC 관리' },
+  { key: 'solution', label: '🎯 정답 설정' },
+  { key: 'evidence', label: '🔍 증거물 카탈로그' },
+  { key: 'slots',    label: '⚙️ 생성 슬롯' },
+  { key: 'preview',  label: '👁️ 미리보기' },
 ]
 
 const S = {
@@ -19,16 +27,13 @@ const S = {
     display: 'flex', flexDirection: 'column', flexShrink: 0,
   },
   sidebarHeader: {
-    padding: '20px 16px 16px',
-    borderBottom: '1px solid #313244',
+    padding: '20px 16px 16px', borderBottom: '1px solid #313244',
   },
   sidebarTitle: {
     fontSize: 13, fontWeight: 700, color: '#cba6f7', letterSpacing: 1,
     textTransform: 'uppercase', margin: 0,
   },
-  sidebarSub: {
-    fontSize: 11, color: '#6c7086', marginTop: 4,
-  },
+  sidebarSub: { fontSize: 11, color: '#6c7086', marginTop: 4, margin: 0 },
   nav: { flex: 1, padding: '12px 0' },
   navItem: (active) => ({
     display: 'block', width: '100%', textAlign: 'left',
@@ -47,10 +52,13 @@ const S = {
   main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   topbar: {
     height: 52, background: '#fff', borderBottom: '1px solid #e0e0e0',
-    display: 'flex', alignItems: 'center', padding: '0 24px',
-    flexShrink: 0,
+    display: 'flex', alignItems: 'center', padding: '0 24px', gap: 12, flexShrink: 0,
   },
-  topbarTitle: { fontSize: 16, fontWeight: 600, margin: 0 },
+  topbarTitle: { fontSize: 16, fontWeight: 600, margin: 0, flex: 1 },
+  exportBtn: {
+    padding: '5px 12px', border: '1px solid #e4e4e7', borderRadius: 5,
+    background: '#fafafa', color: '#52525b', cursor: 'pointer', fontSize: 12,
+  },
   content: { flex: 1, overflow: 'auto', padding: 24 },
   placeholder: {
     background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8,
@@ -58,18 +66,48 @@ const S = {
   },
 }
 
-function Placeholder({ page }) {
-  return (
-    <div style={S.placeholder}>
-      <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
-      <div><strong>{page}</strong> 페이지 — 2단계에서 구현 예정</div>
-    </div>
-  )
+function loadData() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : initialData
+  } catch {
+    return initialData
+  }
+}
+
+function exportJson(data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'fixedLayer.json'
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 export default function AdminApp() {
   const [page, setPage] = useState('scenario')
+  const [data, setData] = useState(loadData)
   const current = NAV_ITEMS.find(n => n.key === page)
+
+  const handleSave = (updated) => {
+    setData(updated)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+  }
+
+  const PAGE_MAP = {
+    scenario: <ScenarioPage data={data} onSave={handleSave} />,
+    npc:      <NpcPage      data={data} onSave={handleSave} />,
+    solution: <SolutionPage data={data} onSave={handleSave} />,
+    evidence: <EvidencePage data={data} onSave={handleSave} />,
+    slots:    <SlotsPage    data={data} onSave={handleSave} />,
+    preview:  (
+      <div style={S.placeholder}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
+        <div><strong>미리보기</strong> 페이지 — 3단계에서 구현 예정</div>
+      </div>
+    ),
+  }
 
   return (
     <div style={S.root}>
@@ -89,7 +127,7 @@ export default function AdminApp() {
             </button>
           ))}
         </nav>
-        <button style={S.backBtn} onClick={() => { window.location.hash = '/' }}>
+        <button style={S.backBtn} onClick={() => { window.location.href = '/' }}>
           ← 플레이어 씬으로
         </button>
       </aside>
@@ -97,9 +135,12 @@ export default function AdminApp() {
       <main style={S.main}>
         <div style={S.topbar}>
           <h1 style={S.topbarTitle}>{current?.label}</h1>
+          <button style={S.exportBtn} onClick={() => exportJson(data)}>
+            JSON 내보내기
+          </button>
         </div>
         <div style={S.content}>
-          <Placeholder page={current?.label} />
+          {PAGE_MAP[page]}
         </div>
       </main>
     </div>
