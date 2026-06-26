@@ -1,0 +1,89 @@
+{
+  "scenario": {
+    "id": "scenario-001",
+    "title": "미술관 절도 사건",
+    "grade_band_id": "B",
+    "case_type": "절도"
+  },
+  "config": {
+    "A": { "label": "초등 저학년", "evidence_damage_rate": 30, "suspect_count": 3, "experience_time": 5, "evidence_count": 3 },
+    "B": { "label": "초등 고학년", "evidence_damage_rate": 50, "suspect_count": 4, "experience_time": 8, "evidence_count": 4 },
+    "C": { "label": "중학생",      "evidence_damage_rate": 80, "suspect_count": 5, "experience_time": 10, "evidence_count": 5 }
+  },
+  "npcList": [
+    { "id": "npc-01", "name": "김민준", "npc_kind": "suspect", "profile": "미술관 큐레이터" },
+    { "id": "npc-02", "name": "이서연", "npc_kind": "suspect", "profile": "청소 직원" },
+    { "id": "npc-03", "name": "박지훈", "npc_kind": "suspect", "profile": "경비원" },
+    { "id": "npc-04", "name": "최유리", "npc_kind": "suspect", "profile": "방문객" },
+    { "id": "npc-05", "name": "정도현", "npc_kind": "witness", "profile": "인근 상인" }
+  ],
+  "solution": {
+    "culprit_npc_id": "npc-02",
+    "correct_inference": "청소 직원 이서연이 야간 청소 중 보안 코드를 훔쳐보고 범행을 저질렀다."
+  },
+  "solutionClues": [
+    { "id": "clue-01", "evidence_def_id": "ev-01", "reasoning_link": "브러시에서 발견된 지문이 이서연과 일치한다." },
+    { "id": "clue-02", "evidence_def_id": "ev-03", "reasoning_link": "달항아리 파편에서 청소용 장갑 섬유가 검출됐다." }
+  ],
+  "evidenceDefs": [
+    {
+      "id": "ev-01",
+      "name": "분석용 브러시",
+      "file": "Brush.glb",
+      "colliderSize": [0.5, 1.2, 0.5],
+      "miniGame": { "type": "timing", "label": "지문 파우더 도포", "difficulty": "normal" }
+    },
+    {
+      "id": "ev-02",
+      "name": "조각상",
+      "file": "Sculpture.glb",
+      "colliderSize": [1.0, 1.8, 1.0],
+      "miniGame": { "type": "rapidclick", "label": "파편 수거", "target": 5, "time": 8 }
+    },
+    {
+      "id": "ev-03",
+      "name": "달항아리",
+      "file": "moon_jar.glb",
+      "colliderSize": [1.0, 1.2, 1.0],
+      "miniGame": { "type": "timing", "label": "균열 분석", "difficulty": "hard" }
+    },
+    {
+      "id": "ev-04",
+      "name": "고서",
+      "file": "old_art_Book.glb",
+      "colliderSize": [0.8, 0.6, 1.0],
+      "miniGame": { "type": "timing", "label": "잉크 검출", "difficulty": "easy" }
+    }
+  ],
+  "generationSlots": [
+    {
+      "id": "slot-s3", "slot_key": "S3", "slot_kind": "scene_narrative",
+      "generation_order": 1, "target_field": "SCENARIO.briefing", "variable_axis": "grade_band",
+      "fallback_payload": { "briefing": "미술관에서 사건이 발생했습니다." }
+    },
+    {
+      "id": "slot-s4", "slot_key": "S4", "slot_kind": "suspect_alibi",
+      "generation_order": 2, "target_field": "NPC.alibi", "variable_axis": "suspect",
+      "fallback_payload": { "alibi": "알리바이 없음" }
+    },
+    {
+      "id": "slot-s1", "slot_key": "S1", "slot_kind": "npc_detail",
+      "generation_order": 3, "target_field": "NPC.description", "variable_axis": "grade_band",
+      "fallback_payload": { "description": "기본 용의자 설명" }
+    },
+    {
+      "id": "slot-s2", "slot_key": "S2", "slot_kind": "evidence_placement",
+      "generation_order": 4, "target_field": "EVIDENCE.position", "variable_axis": "grade_band",
+      "fallback_payload": {}
+    },
+    {
+      "id": "slot-s5", "slot_key": "S5", "slot_kind": "inference_prompt",
+      "generation_order": 5, "target_field": "PLAY_RESULT.prompt", "variable_axis": "grade_band",
+      "fallback_payload": { "prompt": "범인을 추론하세요." }
+    }
+  ],
+  "generationConstraints": [
+    { "id": "gc-01", "slot_id": "slot-s1", "rule_type": "culprit_in_suspects", "rule_value": "culprit_npc_id must exist in npcList" },
+    { "id": "gc-02", "slot_id": "slot-s2", "rule_type": "evidence_count", "rule_value": "placed count must match config.evidence_count" }
+  ]
+}

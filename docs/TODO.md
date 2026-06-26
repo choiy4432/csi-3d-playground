@@ -1,6 +1,6 @@
 # TODO
 
-> 마지막 업데이트: 2026-06-26
+> 마지막 업데이트: 2026-06-26 (1단계 완료)
 
 ---
 
@@ -16,16 +16,16 @@
 - [ ] space 추가하여 onclick으로 방 전환할 때, 양 방에서 동일 object 배치 시 scale 변화 +@ 관측
 
 <details>
-<summary>📌 관리자 에디터 + 가상 생성층 (미완료 11 / 11)</summary>
+<summary>📌 관리자 에디터 + 가상 생성층 (미완료 8 / 11)</summary>
 
 > ERD(`docs/forensic_full_erd_vis_up.html`) · Figma 설계 기준.  
 > `PLACE/SPACE` 관련 기능은 추후 추가 예정 (현재 Room01.glb 고정).
 
 #### 1단계 — 데이터 스키마 & 라우팅
 
-- [ ] `src/data/fixedLayer.json` 초기 데이터 작성 (SCENARIO · NPC · SOLUTION · SOLUTION_CLUE · EVIDENCE_DEF · GENERATION_SLOT · CONFIG)
-- [ ] hash 라우팅 추가 (`/#/` → 플레이어 씬, `/#/admin` → 에디터)
-- [ ] `src/admin/AdminApp.jsx` 레이아웃 (사이드바 + 콘텐츠 영역)
+- [x] `src/data/fixedLayer.json` 초기 데이터 작성 (SCENARIO · NPC · SOLUTION · SOLUTION_CLUE · EVIDENCE_DEF · GENERATION_SLOT · CONFIG)
+- [x] hash 라우팅 추가 (`/#/` → 플레이어 씬, `/#/admin` → 에디터)
+- [x] `src/admin/AdminApp.jsx` 레이아웃 (사이드바 + 콘텐츠 영역)
 
 #### 2단계 — 에디터 페이지
 
