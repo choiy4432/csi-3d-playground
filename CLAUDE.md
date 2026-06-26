@@ -19,7 +19,7 @@
 
 AI 기반 실시간 동적 생성형 과학수사·프로파일링 직무체험 콘텐츠.
 PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI 평가 리포트)
-배포: https://ai-job-experience.vercel.app
+배포: https://csi-3d-playground.vercel.app/
 
 ## 기술 스택
 
@@ -37,20 +37,22 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 `.claude/agents/` 참고.
 
 > **TODO 규칙**: `docs/TODO.md` 항목 추가·완료·보류 처리 시 Claude가 복잡도를 판단한다.
+>
 > - **단순** (완료 체크, 단일 항목 추가): Claude가 `todo-manager` 규칙에 따라 직접 처리한다.
 > - **복잡** (드롭다운 분류, 보류 판단, 구조 재편): `todo-manager` 에이전트(Opus + extended thinking)를 Agent 도구로 호출한다.
 
 ### 호출 규칙
 
-| 에이전트 | 호출 조건 |
-|---|---|
-| `code-reviewer` | 아래 **핵심 파일** 수정 후 반드시 실행 |
-| `type-checker` | API 응답 구조 또는 컴포넌트 props 변경 시 |
-| `db-migration-reviewer` | `backend/migrations/` 파일 생성·수정 시 |
-| `prompt-reviewer` | LLM 프롬프트 문자열 작성·수정 시 |
-| `test-writer` | 사용자가 "테스트 짜줘" 라고 요청할 때만 |
+| 에이전트                | 호출 조건                                 |
+| ----------------------- | ----------------------------------------- |
+| `code-reviewer`         | 아래 **핵심 파일** 수정 후 반드시 실행    |
+| `type-checker`          | API 응답 구조 또는 컴포넌트 props 변경 시 |
+| `db-migration-reviewer` | `backend/migrations/` 파일 생성·수정 시   |
+| `prompt-reviewer`       | LLM 프롬프트 문자열 작성·수정 시          |
+| `test-writer`           | 사용자가 "테스트 짜줘" 라고 요청할 때만   |
 
 **code-reviewer 핵심 파일 (이 파일을 수정하면 무조건 실행):**
+
 - `src/SceneWrapper.jsx`
 - `src/PlayerController.jsx`
 - `src/EvidenceObject.jsx`
@@ -157,12 +159,14 @@ backend/
 ## 3D 씬 설계 결정 사항
 
 ### 충돌 시스템
+
 - `<Physics gravity={[0,0,0]}>` — 중력 없는 실내 씬
 - 방: `RigidBody type="fixed" colliders="trimesh"` + Room01.glb `<primitive>` — GLB 메시 형태 그대로 충돌
 - 증거물: `RigidBody type="fixed"` + `CuboidCollider` — 플레이어가 통과 불가
 - 플레이어: `RigidBody type="dynamic"` + `CapsuleCollider`, `gravityScale=0`, `linearDamping=20`
 
 ### Pointer Lock + 레이캐스트
+
 - Pointer Lock 중 `pointermove`의 `clientX/clientY`가 고정되어 R3F 기본 hover 이벤트가 동작하지 않음
 - `useFrame` 안에서 `raycaster.setFromCamera({x:0, y:0}, camera)`로 매 프레임 수동 레이캐스트
 - hover 대상은 `userData.evidenceId`로 식별; GLB 모델 메시는 `raycast = () => {}`로 레이캐스트 제외
@@ -170,17 +174,21 @@ backend/
 - 미니게임 중에는 `pausedRef.current`로 포인터락 요청 및 interact 모두 차단
 
 ### 채증 거리 제한
+
 - `INTERACT_DIST = 2.5` (PlayerController 상수) — 이 거리 안에서만 클릭 채증 가능
 - hit.distance가 범위 내면 노란 와이어프레임 + "[클릭] 채증" 힌트, 밖이면 회색 + "너무 멀어요"
 
 ### 증거물 데이터 (SceneWrapper)
+
 ```js
 { id, file, position: [x,y,z], colliderSize: [w,h,d], collected: false,
   miniGame: { type: 'timing'|'rapidclick', label, difficulty?, target?, time? } }
 ```
+
 `colliderSize`는 물체별로 개별 조정 — GLB 모델 크기에 맞춰 직접 튜닝.
 
 ### 미니게임 (MiniGame.jsx)
+
 - `TimingGame` — rAF 슬라이딩 바, difficulty(easy/normal/hard)로 속도·구간 크기 결정
 - `RapidClickGame` — setInterval 카운트다운, target 클릭 수 도달 시 성공
 - 입력: `window mousedown` / `keydown` (Pointer Lock 중에도 동작)
@@ -188,27 +196,32 @@ backend/
 - 미니게임 중 Pointer Lock 해제 없이 overlay `pointerEvents: 'none'`으로 유지
 
 ### 조명 시스템
+
 - 전역 조명: `ambientLight` + `DebugLight` ×3 (SceneWrapper 고정 좌표)
 - 찬장 조명: Room01.glb traverse → `/light/i` 이름 emissive 메시 자동 감지 → `DebugLight` 배치
 - GLB 내장 라이트: `obj.isLight` 감지, isolation 모드에서 intensity=0으로 토글 (원본은 `userData._origIntensity` 보존)
 - `DebugLight.jsx` — pointLight + breath 구체 래퍼; `debug` prop으로 구체 토글, `isolated` prop으로 라이트 끄기
 
 ### 개발자 도구 (DEV MODE)
+
 단축키:
+
 - `1` — DEV 모드 토글: Rapier 콜라이더 시각화 + OrbitControls 자유 시점, OFF 시 스폰 지점 리스폰
 - `2` — 라이트 아이솔레이션: 전역 조명 끄고 조명 기구 구체만 표시 (DEV 모드일 때만)
 
 OrbitControls: 좌클릭=회전, 우클릭=pan, 휠=줌 (DEV 모드 중 포인터락 비활성)
 
 디버그 구체 색상 범례:
+
 - 노란 와이어프레임 — Rapier 콜라이더
 - RGB 축 — RigidBody 로컬 좌표계
 - 민트(`#00ffcc`) — `DebugLight` (emissive 기반 또는 전역 pointLight)
 - 주황(`#ff6600`) — GLB 내장 라이트 노드
 
 PlayerController — `forwardRef` + `useImperativeHandle`로 `reset()` 노출:
+
 ```js
-playerRef.current.reset()  // 위치 [0,BODY_Y,0], linvel 0, yaw/pitch 0으로 리셋
+playerRef.current.reset(); // 위치 [0,BODY_Y,0], linvel 0, yaw/pitch 0으로 리셋
 ```
 
 ---
@@ -226,6 +239,7 @@ main   ← Vercel 프로덕션 (안정 버전만 머지)
 ```
 
 ### 평상시 (혼자 작업)
+
 `dev`에 직접 커밋해도 된다. feature 브랜치는 생략 가능.
 
 ```bash
@@ -236,6 +250,7 @@ git commit -m "feat(xxx): ..."
 ```
 
 ### 팀 협업 시
+
 feature 브랜치 → PR → `dev` 머지 방식으로 전환한다.
 
 ```bash
@@ -245,6 +260,7 @@ git push origin feat/xxx       # PR 생성 → dev로 머지
 ```
 
 ### 배포 (dev → main)
+
 ```bash
 # dev에서 충분히 검증 후
 git checkout main
@@ -255,6 +271,7 @@ git push origin v1.x.0
 ```
 
 ### 규칙
+
 - `main` 직접 push 금지
 - 배포할 때마다 태그 남기기 (`v0.1`, `v1.0` 등) — 특정 버전 복원 기준점
 - 작업 시작 전 항상 현재 브랜치 확인: `git branch`
