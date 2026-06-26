@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, SaveBar, IconBtn, S, btn, badge } from '../shared.jsx'
+import { Card, IconBtn, S, btn, badge } from '../shared.jsx'
 
 const KIND_OPTIONS = [
   { value: 'suspect', label: '용의자' },
@@ -16,13 +16,13 @@ export default function NpcPage({ data, onSave }) {
   const [editForm, setEditForm] = useState(null)
   const [adding, setAdding] = useState(false)
   const [newForm, setNewForm] = useState({ ...EMPTY })
-  const [saved, setSaved] = useState(false)
-
   const startEdit = (npc) => { setEditId(npc.id); setEditForm({ ...npc }) }
   const cancelEdit = () => { setEditId(null); setEditForm(null) }
 
   const commitEdit = () => {
-    setNpcs(ns => ns.map(n => n.id === editId ? editForm : n))
+    const updated = npcs.map(n => n.id === editId ? editForm : n)
+    setNpcs(updated)
+    onSave({ ...data, npcList: updated })
     cancelEdit()
   }
 
@@ -36,15 +36,11 @@ export default function NpcPage({ data, onSave }) {
   const handleAdd = () => {
     if (!newForm.name.trim()) return
     const id = `npc-${String(npcs.length + 1).padStart(2, '0')}`
-    setNpcs(ns => [...ns, { ...newForm, id }])
+    const updated = [...npcs, { ...newForm, id }]
+    setNpcs(updated)
+    onSave({ ...data, npcList: updated })
     setNewForm({ ...EMPTY })
     setAdding(false)
-  }
-
-  const handleSave = () => {
-    onSave({ ...data, npcList: npcs })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
   }
 
   const suspects = npcs.filter(n => n.npc_kind === 'suspect').length
@@ -159,8 +155,6 @@ export default function NpcPage({ data, onSave }) {
           </tbody>
         </table>
       </Card>
-
-      <SaveBar onSave={handleSave} saved={saved} />
     </>
   )
 }
