@@ -172,7 +172,7 @@ export default function SlotsPage({ data, onSave }) {
                   </span>
                 </td>
                 <td style={S.td}>
-                  <code style={{ fontSize: 12, color: '#52525b' }}>{c.rule_type}</code>
+                  <code style={{ fontSize: 12, color: '#52525b', background: 'transparent' }}>{c.rule_type}</code>
                 </td>
                 <td style={{ ...S.td, fontSize: 12, color: '#52525b' }}>{c.rule_value}</td>
               </tr>

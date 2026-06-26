@@ -36,7 +36,9 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 코드 검토·테스트·타입·프롬프트·DB 마이그레이션 검토는 각 에이전트가 담당한다.
 `.claude/agents/` 참고.
 
-> **TODO 규칙**: `docs/TODO.md` 에 항목을 추가·완료·보류 처리할 때는 반드시 `todo-manager` 에이전트를 호출한다. 직접 파일을 수정하지 않는다.
+> **TODO 규칙**: `docs/TODO.md` 항목 추가·완료·보류 처리 시 Claude가 복잡도를 판단한다.
+> - **단순** (완료 체크, 단일 항목 추가): Claude가 `todo-manager` 규칙에 따라 직접 처리한다.
+> - **복잡** (드롭다운 분류, 보류 판단, 구조 재편): `todo-manager` 에이전트(Opus + extended thinking)를 Agent 도구로 호출한다.
 
 ### 호출 규칙
 

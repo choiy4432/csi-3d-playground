@@ -1,12 +1,13 @@
 # TODO
 
-> 마지막 업데이트: 2026-06-26 (2단계 완료)
+> 마지막 업데이트: 2026-06-26 (3단계 완료)
 
 ---
 
 ## 🔄 진행 중
 
 <!-- 현재 작업 중인 항목 -->
+
 ---
 
 ## 📋 대기 중
@@ -15,7 +16,7 @@
 - [ ] space 추가하여 onclick으로 방 전환할 때, 양 방에서 동일 object 배치 시 scale 변화 +@ 관측
 
 <details>
-<summary>📌 관리자 에디터 + 가상 생성층 (미완료 3 / 11)</summary>
+<summary>📌 관리자 에디터 + 가상 생성층 (미완료 2 / 13)</summary>
 
 > ERD(`docs/forensic_full_erd_vis_up.html`) · Figma 설계 기준.  
 > `PLACE/SPACE` 관련 기능은 추후 추가 예정 (현재 Room01.glb 고정).
@@ -36,9 +37,9 @@
 
 #### 3단계 — 가상 생성층 & 씬 연결
 
-- [ ] `src/services/mockGenerator.js` 구현 (고정층 로드 → position 프리셋 배정 → GENERATED_CONTENT 반환)
-- [ ] 미리보기 페이지 (mock 생성 결과 확인 — 어떤 증거물이 어디 배치되는지)
-- [ ] `SceneWrapper.jsx` 연결 (하드코딩 `INITIAL_EVIDENCES` → mockGenerator 결과로 교체)
+- [x] `src/services/mockGenerator.js` 구현 (고정층 로드 → position 프리셋 배정 → GENERATED_CONTENT 반환)
+- [x] 미리보기 페이지 (mock 생성 결과 확인 — 어떤 증거물이 어디 배치되는지)
+- [x] `SceneWrapper.jsx` 연결 (하드코딩 `INITIAL_EVIDENCES` → mockGenerator 결과로 교체)
 
 #### 추후 추가
 
@@ -58,4 +59,6 @@
 ## ✅ 완료
 
 <!-- 완료된 항목 -->
+- [x] 관리자 에디터 1단계 — 데이터 스키마 & 라우팅 (fixedLayer.json · hash 라우팅 · AdminApp 레이아웃)
 - [x] 관리자 에디터 2단계 — 에디터 페이지 5종 (시나리오 · NPC · 정답 · 증거물 · 슬롯)
+- [x] 관리자 에디터 3단계 — 가상 생성층 & 씬 연결 (mockGenerator · 미리보기 페이지 · SceneWrapper 연결)

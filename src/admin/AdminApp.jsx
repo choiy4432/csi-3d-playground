@@ -5,6 +5,7 @@ import NpcPage from './pages/NpcPage.jsx'
 import SolutionPage from './pages/SolutionPage.jsx'
 import EvidencePage from './pages/EvidencePage.jsx'
 import SlotsPage from './pages/SlotsPage.jsx'
+import PreviewPage from './pages/PreviewPage.jsx'
 import InfoPage from './pages/InfoPage.jsx'
 
 const STORAGE_KEY = 'csi_fixedLayer'
@@ -103,12 +104,7 @@ export default function AdminApp() {
     solution: <SolutionPage data={data} onSave={handleSave} />,
     evidence: <EvidencePage data={data} onSave={handleSave} />,
     slots:    <SlotsPage    data={data} onSave={handleSave} />,
-    preview:  (
-      <div style={S.placeholder}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
-        <div><strong>미리보기</strong> 페이지 — 3단계에서 구현 예정</div>
-      </div>
-    ),
+    preview:  <PreviewPage data={data} />,
     info: <InfoPage />,
   }
 
