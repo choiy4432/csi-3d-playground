@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Card, Field, SaveBar, IconBtn, S, btn, badge } from '../shared.jsx'
 
-const _MODEL_GLOB = import.meta.glob('../../../public/models/*.glb')
+const _MODEL_GLOB = import.meta.glob('../../../public/models/*.glb', { query: '?url', import: 'default', eager: true })
 const AVAILABLE_MODELS = Object.keys(_MODEL_GLOB).map(p => p.split('/').pop()).sort()
 
 const MINIGAME_OPTIONS = [
