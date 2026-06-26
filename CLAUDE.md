@@ -2,6 +2,8 @@
 
 ## 프로젝트 개요
 
+**작업 폴더: `csi-scene/`** — 모든 작업은 이 디렉토리 기준으로 진행한다.
+
 AI 기반 실시간 동적 생성형 과학수사·프로파일링 직무체험 콘텐츠.
 PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI 평가 리포트)
 배포: https://ai-job-experience.vercel.app
