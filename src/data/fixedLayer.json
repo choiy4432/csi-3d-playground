@@ -68,8 +68,8 @@
     },
     {
       "id": "slot-s1", "slot_key": "S1", "slot_kind": "space_placement",
-      "generation_order": 3, "target_field": "NPC.description", "variable_axis": "grade_band",
-      "fallback_payload": { "description": "기본 용의자 설명" }
+      "generation_order": 3, "target_field": "SPACE.placement", "variable_axis": "grade_band",
+      "fallback_payload": { "placement": "기본 공간 배치" }
     },
     {
       "id": "slot-s2", "slot_key": "S2", "slot_kind": "evidence_placement",
@@ -78,8 +78,8 @@
     },
     {
       "id": "slot-s5", "slot_key": "S5", "slot_kind": "npc_dialogue",
-      "generation_order": 5, "target_field": "PLAY_RESULT.prompt", "variable_axis": "grade_band",
-      "fallback_payload": { "prompt": "범인을 추론하세요." }
+      "generation_order": 5, "target_field": "NPC.dialogue", "variable_axis": "grade_band",
+      "fallback_payload": { "dialogue": "기본 NPC 대사" }
     }
   ],
   "generationConstraints": [
