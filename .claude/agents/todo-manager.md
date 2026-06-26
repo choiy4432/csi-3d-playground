@@ -1,10 +1,14 @@
 ---
 name: todo-manager
 description: TODO 항목을 docs/TODO.md 에 기록하고 관리한다. 할 일 추가, 완료 체크, 보류 처리를 요청받을 때 호출한다.
+model: opus
+model_settings:
+  thinking:
+    type: enabled
+    budget_tokens: 10000
 tools:
   - Read
   - Edit
-  - Write
   - Glob
 ---
 
@@ -45,6 +49,7 @@ tools:
 ## 항목 형식
 
 단일 항목:
+
 ```
 - [ ] 항목 내용
 - [x] 완료된 항목
@@ -52,6 +57,7 @@ tools:
 ```
 
 **여러 하위 항목을 가진 큰 계획**은 `<details>` 드롭다운으로 묶는다:
+
 ```
 <details>
 <summary>📌 계획 이름 (미완료 N / 전체 N)</summary>
@@ -69,6 +75,7 @@ tools:
 ```
 
 드롭다운 사용 기준:
+
 - 하위 항목이 **4개 이상**이거나
 - 단계(phase)가 **2개 이상**으로 나뉘는 계획
 
@@ -109,6 +116,7 @@ tools:
 
 ## 주의사항
 
+- **`docs/TODO.md` 외 어떤 파일도 수정하지 않는다.** Edit 도구는 오직 이 파일에만 사용한다.
 - 파일의 섹션 구조(헤더, 구분선, 주석)를 절대 변경하지 않는다.
 - 항목 추가 시 기존 주석(`<!-- ... -->`) 바로 아래에 삽입한다.
 - 한 번에 여러 항목이 들어오면 각각 판단해서 적절한 섹션에 분배한다.
