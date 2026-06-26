@@ -105,9 +105,9 @@ export default function InfoPage() {
         <h3 style={T.h3}>CONFIG 테이블 (grade_band 별 파라미터)</h3>
         <FieldTable rows={[
           ['대상 학생',       'config[band].label',                '학년 그룹 설명 문자열입니다.'],
-          ['증거 훼손율 (%)', 'config[band].evidence_damage_rate', '해당 학년에서 증거물 중 훼손된 비율입니다.'],
-          ['용의자 수',       'config[band].suspect_count',        '게임에 등장하는 용의자 수입니다.'],
-          ['체험 시간 (분)',  'config[band].experience_time',      '전체 게임 제한 시간입니다.'],
+          ['증거 훼손율 (%)', 'config[band].damage',        '해당 학년에서 증거물 중 훼손된 비율입니다.'],
+          ['용의자 수',       'config[band].suspect_count', '게임에 등장하는 용의자 수입니다.'],
+          ['체험 시간 (분)',  'config[band].time',          '전체 게임 제한 시간입니다.'],
           ['증거물 수',       'config[band].evidence_count',       'AI가 씬에 배치할 증거물 개수입니다.'],
         ]} />
         <div style={T.note}>
@@ -120,7 +120,7 @@ export default function InfoPage() {
         <p style={T.p}>화면에서 "등장인물 관리" 탭에서 편집하는 데이터입니다. 테이블명: <Code>NPC</Code></p>
         <FieldTable rows={[
           ['이름',       'npcList[].name',     '등장인물 이름입니다.'],
-          ['구분',       'npcList[].npc_kind', '"suspect" (용의자) 또는 "witness" (목격자).'],
+          ['구분',       'npcList[].npc_kind', '"suspect" (용의자) · "witness" (목격자) · "briefer" (안내자) · "target_character" (사건 대상).'],
           ['직업/역할',  'npcList[].profile',  '등장인물의 직업이나 사건과의 관계입니다.'],
           ['(내부 ID)',  'npcList[].id',       '"npc-01" 형식. 자동 부여. 정답·단서에서 참조합니다.'],
         ]} />
@@ -172,7 +172,7 @@ export default function InfoPage() {
 
         <h3 style={T.h3}>생성 실행 순서</h3>
         <div style={T.flow}>
-          {['S3 사건배경', 'S4 알리바이', 'S1 등장인물설명', 'S2 증거물배치', 'S5 추론질문'].map((s, i, arr) => (
+          {['S3 사건배경', 'S4 알리바이', 'S1 공간배치', 'S2 증거물배치', 'S5 NPC대사'].map((s, i, arr) => (
             <>
               <div key={s} style={T.flowItem(true)}>{s}</div>
               {i < arr.length - 1 && <span key={`a${i}`} style={T.arrow}>→</span>}

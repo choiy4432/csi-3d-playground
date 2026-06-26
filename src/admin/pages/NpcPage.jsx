@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Card, IconBtn, S, btn, badge } from '../shared.jsx'
 
 const KIND_OPTIONS = [
-  { value: 'suspect', label: '용의자' },
-  { value: 'witness', label: '목격자' },
+  { value: 'suspect',          label: '용의자' },
+  { value: 'witness',          label: '목격자' },
+  { value: 'briefer',          label: '안내자' },
+  { value: 'target_character', label: '사건 대상' },
 ]
-const KIND_LABEL = { suspect: '용의자', witness: '목격자' }
-const KIND_COLOR = { suspect: 'blue', witness: 'green' }
+const KIND_LABEL = { suspect: '용의자', witness: '목격자', briefer: '안내자', target_character: '사건 대상' }
+const KIND_COLOR = { suspect: 'blue', witness: 'green', briefer: 'purple', target_character: 'orange' }
 
 const EMPTY = { id: '', name: '', npc_kind: 'suspect', profile: '' }
 
@@ -45,11 +47,13 @@ export default function NpcPage({ data, onSave }) {
 
   const suspects = npcs.filter(n => n.npc_kind === 'suspect').length
   const witnesses = npcs.filter(n => n.npc_kind === 'witness').length
+  const briefers  = npcs.filter(n => n.npc_kind === 'briefer').length
+  const targets   = npcs.filter(n => n.npc_kind === 'target_character').length
 
   return (
     <>
       <Card
-        title={`등장인물 목록 (용의자 ${suspects}명 · 목격자 ${witnesses}명)`}
+        title={`등장인물 목록 (용의자 ${suspects}명 · 목격자 ${witnesses}명 · 안내자 ${briefers}명 · 사건대상 ${targets}명)`}
         action={
           <button style={btn('primary')} onClick={() => setAdding(a => !a)}>
             + 등장인물 추가

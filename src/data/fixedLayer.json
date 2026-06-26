@@ -6,9 +6,9 @@
     "case_type": "절도"
   },
   "config": {
-    "A": { "label": "초등 저학년", "evidence_damage_rate": 30, "suspect_count": 3, "experience_time": 5, "evidence_count": 3 },
-    "B": { "label": "초등 고학년", "evidence_damage_rate": 50, "suspect_count": 4, "experience_time": 8, "evidence_count": 4 },
-    "C": { "label": "중학생",      "evidence_damage_rate": 80, "suspect_count": 5, "experience_time": 10, "evidence_count": 5 }
+    "A": { "label": "초등 저학년", "damage": 30, "suspect_count": 3, "time": 5, "evidence_count": 3 },
+    "B": { "label": "초등 고학년", "damage": 50, "suspect_count": 4, "time": 8, "evidence_count": 4 },
+    "C": { "label": "중학생",      "damage": 80, "suspect_count": 5, "time": 10, "evidence_count": 5 }
   },
   "npcList": [
     { "id": "npc-01", "name": "김민준", "npc_kind": "suspect", "profile": "미술관 큐레이터" },
@@ -67,7 +67,7 @@
       "fallback_payload": { "alibi": "알리바이 없음" }
     },
     {
-      "id": "slot-s1", "slot_key": "S1", "slot_kind": "npc_detail",
+      "id": "slot-s1", "slot_key": "S1", "slot_kind": "space_placement",
       "generation_order": 3, "target_field": "NPC.description", "variable_axis": "grade_band",
       "fallback_payload": { "description": "기본 용의자 설명" }
     },
@@ -77,7 +77,7 @@
       "fallback_payload": {}
     },
     {
-      "id": "slot-s5", "slot_key": "S5", "slot_kind": "inference_prompt",
+      "id": "slot-s5", "slot_key": "S5", "slot_kind": "npc_dialogue",
       "generation_order": 5, "target_field": "PLAY_RESULT.prompt", "variable_axis": "grade_band",
       "fallback_payload": { "prompt": "범인을 추론하세요." }
     }
