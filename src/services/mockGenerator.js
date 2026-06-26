@@ -70,3 +70,15 @@ export function loadPlacements(gradeBand, data) {
   } catch {}
   return generateEvidencePlacements(gradeBand, data)
 }
+
+// PLAY_RESULT 런타임 레코드 초기 형태 (FastAPI 전송용)
+export function createPlayResult(sessionId = null) {
+  return {
+    id: null,
+    session_id: sessionId,
+    accused_npc_id: null,
+    chosen_inference: '',
+    score: 0,
+    is_correct: false,
+  }
+}

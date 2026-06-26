@@ -9,7 +9,7 @@
 <!-- 현재 작업 중인 항목 -->
 
 <details>
-<summary>📌 Figma 기획 반영 — 스키마 정합성 (미완료 6 / 7)</summary>
+<summary>📌 Figma 기획 반영 — 스키마 정합성 (미완료 5 / 7)</summary>
 
 > 기획자 Figma(기초 설정 구체화 섹션) 검토 결과 도출된 항목.  
 > **기준: ERD(`docs/forensic_full_erd_vis_up.html`) 우선. Figma와 충돌 시 ERD 따름.**
@@ -26,7 +26,7 @@
   - `CASE_JOB_RULE` (사건 유형 → 직업 제한)
   - `CASE_EVIDENCE_RULE` (사건 유형 → 증거 종류 제한)
   - `CASE_TARGET_RULE` (사건 유형 → 타겟 타입 제한)
-- [ ] **`PLAY_RESULT` 필드 추가** — `accused_npc_id`, `score`, `is_correct` (정답 채점 입력값)
+- [x] **`PLAY_RESULT` 필드 추가** — `accused_npc_id`, `score`, `is_correct` (정답 채점 입력값)
 
 #### 🟡 우선순위 중간
 
