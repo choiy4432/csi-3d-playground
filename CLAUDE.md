@@ -36,10 +36,11 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 코드 검토·테스트·타입·프롬프트·DB 마이그레이션 검토는 각 에이전트가 담당한다.
 `.claude/agents/` 참고.
 
-> **TODO 규칙**: `docs/TODO.md` 항목 추가·완료·보류 처리 시 Claude가 복잡도를 판단한다.
+> **TODO 규칙**: `docs/TODO.md` 관련 작업은 **무조건 `todo-manager` 에이전트를 Agent 도구로 호출**한다.
 >
-> - **단순** (완료 체크, 단일 항목 추가): Claude가 `todo-manager` 규칙에 따라 직접 처리한다.
-> - **복잡** (드롭다운 분류, 보류 판단, 구조 재편): `todo-manager` 에이전트(Opus + extended thinking)를 Agent 도구로 호출한다.
+> - 모델은 `todo-manager` 에이전트가 작업 복잡도에 따라 자율적으로 판단한다.
+> - `<details>` 드롭다운 그룹 내부 항목을 작업하기 시작하면, 해당 그룹을 `## 🔄 진행 중` 섹션으로 이동한다.
+> - 그룹 내 모든 항목 완료 시 `## ✅ 완료` 섹션으로 이동한다.
 
 ### 오케스트레이션 흐름
 
@@ -312,3 +313,5 @@ refactor(scene): EvidenceObject clone 처리 분리
 
 prefix: `feat` / `fix` / `test` / `refactor` / `chore`
 scope: 슬롯키(S1~S5) · 인터랙션ID(COL-01 등) · 레이어(scene/validator/pipeline)
+
+`Co-Authored-By` 트레일러는 커밋 메시지에 포함하지 않는다.
