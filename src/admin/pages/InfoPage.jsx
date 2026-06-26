@@ -186,7 +186,7 @@ export default function InfoPage() {
         <h3 style={T.h3}>GENERATION_SLOT 테이블 필드</h3>
         <FieldTable rows={[
           ['항목 (슬롯 키)',  'slot_key',           '"S1"~"S5". 생성 파이프라인의 식별자입니다.'],
-          ['생성 유형',      'slot_kind',          '슬롯이 생성하는 콘텐츠 종류. scene_narrative / suspect_alibi 등.'],
+          ['생성 유형',      'slot_kind',          'scene_narrative / suspect_alibi / space_placement / evidence_placement / npc_dialogue'],
           ['적용 위치',      'target_field',       '생성 결과가 저장될 DB 필드 경로 (예: NPC.description).'],
           ['변형 기준',      'variable_axis',      '"grade_band" / "suspect" / "evidence". AI가 어떤 단위로 생성할지 결정.'],
           ['기본값',         'fallback_payload',   'AI 생성 실패(제약 위반·timeout) 시 대신 사용할 JSON 객체.'],
