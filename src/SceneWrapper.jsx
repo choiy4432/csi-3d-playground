@@ -8,17 +8,7 @@ import MiniGame from './MiniGame'
 import Room from './Room'
 import PlayerController from './PlayerController'
 import DebugLight from './DebugLight'
-
-const INITIAL_EVIDENCES = [
-  { id: 1, file: 'Brush.glb',        position: [ 2,   0,  1  ], colliderSize: [0.5, 1.2, 0.5], collected: false,
-    miniGame: { type: 'timing',     label: '붓으로 지문 채취',     difficulty: 'normal' } },
-  { id: 2, file: 'Sculpture.glb',    position: [-2,   0,  0  ], colliderSize: [1.0, 1.8, 1.0], collected: false,
-    miniGame: { type: 'rapidclick', label: '조각상 증거 확보',     target: 8, time: 3.5 } },
-  { id: 3, file: 'moon_jar.glb',     position: [ 1,   0, -3  ], colliderSize: [1.0, 1.2, 1.0], collected: false,
-    miniGame: { type: 'timing',     label: '도자기 파편 채취',     difficulty: 'hard' } },
-  { id: 4, file: 'old_art_Book.glb', position: [-1.5, 0, -2.5], colliderSize: [0.8, 0.6, 1.0], collected: false,
-    miniGame: { type: 'timing',     label: '문서 증거 채취',       difficulty: 'easy' } },
-]
+import { loadPlacements, loadFixedLayer } from './services/mockGenerator'
 
 const DEFAULT_LIGHTING = {
   ambient: 0.4,
@@ -123,7 +113,10 @@ function Dot({ color }) {
 }
 
 export default function SceneWrapper() {
-  const [evidences, setEvidences]       = useState(INITIAL_EVIDENCES)
+  const [evidences, setEvidences]       = useState(() => {
+    const data = loadFixedLayer()
+    return loadPlacements(data.scenario.grade_band_id, data)
+  })
   const [locked, setLocked]             = useState(false)
   const [hasStarted, setHasStarted]     = useState(false)
   const [hoveredId, setHoveredId]       = useState(null)

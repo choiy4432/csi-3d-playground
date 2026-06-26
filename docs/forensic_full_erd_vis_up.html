@@ -1,0 +1,675 @@
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background: #f5f4f0;
+  }
+
+  #zoom-controls {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #d0cec8;
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    font-family: sans-serif;
+    font-size: 13px;
+    user-select: none;
+    z-index: 100;
+  }
+  #zoom-controls button {
+    height: 28px;
+    min-width: 28px;
+    border: 1px solid #c0beb8;
+    border-radius: 5px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #zoom-controls button:hover {
+    background: #eae9e4;
+  }
+  #zoom-level {
+    min-width: 3.5rem;
+    text-align: center;
+    color: #555;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #hint {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-family: sans-serif;
+    font-size: 13px;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 200;
+  }
+  #hint.show {
+    opacity: 1;
+  }
+
+  #zoom-wrapper {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+  }
+  #zoom-wrapper.dragging {
+    cursor: grabbing;
+  }
+
+  #erdall {
+    transform-origin: 0 0;
+    display: inline-block;
+    padding: 2rem;
+  }
+  #erdall svg.erDiagram .divider path {
+    stroke-opacity: 0.5;
+  }
+  #erdall svg.erDiagram .row-rect-odd path,
+  #erdall svg.erDiagram .row-rect-odd rect,
+  #erdall svg.erDiagram .row-rect-even path,
+  #erdall svg.erDiagram .row-rect-even rect {
+    stroke: none !important;
+  }
+</style>
+
+<div id="hint">노드를 클릭하면 연결 관계를 확인할 수 있습니다</div>
+<div id="zoom-controls">
+  <button id="btn-zoom-out" title="축소">−</button>
+  <span id="zoom-level">100%</span>
+  <button id="btn-zoom-in" title="확대">+</button>
+  <button id="btn-fit" style="font-size: 12px">전체 보기</button>
+  <button id="btn-clear" style="font-size: 12px; display: none">
+    선택 해제
+  </button>
+</div>
+
+<div id="zoom-wrapper">
+  <div id="erdall"></div>
+</div>
+
+<script type="module">
+  import mermaid from "https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs";
+  await document.fonts.ready;
+  // 항상 default 테마 고정 — 테이블 텍스트가 항상 진한 검정으로 유지됨
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: "default",
+    themeVariables: { fontSize: "15px" },
+  });
+  const def = `erDiagram
+  LEARNING_OBJECTIVE ||--|{ SCENARIO : "guides"
+  OBJECTIVE_DEF |o--o{ LEARNING_OBJECTIVE : "preset choice"
+  GRADE_BAND ||--o{ SCENARIO : "targets"
+  CASE_TYPE ||--|{ CASE_JOB_RULE : "allows job"
+  CASE_TYPE ||--|{ CASE_EVIDENCE_RULE : "allows evidence"
+  CASE_TYPE ||--|| CASE_TARGET_RULE : "target type"
+  CASE_TYPE ||--o{ PLACE_OBJECT_RULE : "under type"
+  PLACE ||--|{ PLACE_EVIDENCE_RULE : "allows evidence"
+  PLACE ||--o{ PLACE_OBJECT_RULE : "for place"
+  CASE_JOB_RULE }o--|| JOB : "restricts to"
+  CASE_EVIDENCE_RULE }o--|| EVIDENCE_DEF : "restricts to"
+  PLACE_EVIDENCE_RULE }o--|| EVIDENCE_DEF : "restricts to"
+  SCENARIO }o--|| CASE_TYPE : "is of type"
+  SCENARIO ||--|{ STAGE : "has 3"
+  SCENARIO ||--|| CONFIG : "has"
+  SCENARIO ||--o{ NPC : "casts"
+  SCENARIO ||--|| SOLUTION : "has answer"
+  SCENARIO ||--|{ GENERATION_SLOT : "defines variable"
+  SCENARIO ||--o{ PLAY_SESSION : "played as"
+  STAGE }o--|| PROCESS_DEF : "is type"
+  STAGE ||--|| PLACE : "occurs at"
+  STAGE ||--|| JOB : "player picks"
+  STAGE ||--o{ EVIDENCE : "collects"
+  PROCESS_DEF ||--|{ JOB : "candidate jobs"
+  PLACE }o--|| PLACE_CATEGORY : "belongs to"
+  PLACE ||--o{ SPACE : "contains N"
+  PLACE ||--o| TARGET : "features"
+  TARGET ||--o| NPC : "may be character"
+  EVIDENCE }o--|| EVIDENCE_DEF : "is type"
+  SOLUTION }o--|| NPC : "culprit is"
+  SOLUTION ||--|{ SOLUTION_CLUE : "key clues"
+  SOLUTION_CLUE }o--|| EVIDENCE_DEF : "points via"
+  GENERATION_SLOT ||--o{ GENERATION_CONSTRAINT : "must obey"
+  GENERATION_SLOT ||--o{ SLOT_TARGET_REF : "applies to"
+  GENERATION_SLOT ||--o{ GENERATED_CONTENT : "filled by"
+  PLAY_SESSION ||--|{ GENERATED_CONTENT : "generates"
+  PLAY_SESSION ||--|| PLAY_RESULT : "scored as"
+  PLAY_RESULT }o--|| NPC : "accused"
+  PLAY_RESULT }o--|| SOLUTION : "checked against"
+  LEARNING_OBJECTIVE {
+    uuid id PK
+    int objective_def_id FK
+    string custom_text
+    string input_type
+  }
+  OBJECTIVE_DEF {
+    int id PK
+    string name
+    string rubric_hint
+  }
+  GRADE_BAND {
+    int id PK
+    string name
+    int vocab_level
+    int max_evidence
+    int pass_threshold
+  }
+  SCENARIO {
+    uuid id PK
+    uuid objective_id FK
+    int grade_band_id FK
+    int case_type_id FK
+    string title
+  }
+  CASE_TYPE {
+    int id PK
+    string name
+  }
+  CASE_JOB_RULE {
+    int case_type_id FK
+    uuid job_id FK
+  }
+  CASE_EVIDENCE_RULE {
+    int case_type_id FK
+    int evidence_def_id FK
+  }
+  CASE_TARGET_RULE {
+    int case_type_id FK
+    string allowed_target_type
+  }
+  PLACE_EVIDENCE_RULE {
+    uuid place_id FK
+    int evidence_def_id FK
+  }
+  PLACE_OBJECT_RULE {
+    uuid place_id FK
+    int case_type_id FK
+    string object_value
+  }
+  PROCESS_DEF {
+    int step_no PK
+    string name
+  }
+  STAGE {
+    uuid id PK
+    uuid scenario_id FK
+    int step_no FK
+    uuid place_id FK
+    uuid job_id FK
+  }
+  PLACE {
+    uuid id PK
+    int category_step FK
+    string name
+    string mood
+    int space_count
+  }
+  PLACE_CATEGORY {
+    int step_no PK
+    string slot
+  }
+  SPACE {
+    uuid id PK
+    uuid place_id FK
+    string name
+  }
+  TARGET {
+    uuid id PK
+    uuid place_id FK
+    string type
+    string object_value
+    uuid npc_id FK
+  }
+  JOB {
+    uuid id PK
+    int process_step FK
+    string name
+  }
+  EVIDENCE {
+    uuid id PK
+    uuid stage_id FK
+    int evidence_def_id FK
+  }
+  EVIDENCE_DEF {
+    int id PK
+    string name
+  }
+  CONFIG {
+    uuid id PK
+    uuid scenario_id FK
+    int evidence_damage_rate
+    int suspect_count
+    int experience_time
+  }
+  NPC {
+    uuid id PK
+    uuid scenario_id FK
+    string npc_kind
+    string name
+  }
+  SOLUTION {
+    uuid id PK
+    uuid scenario_id FK
+    uuid culprit_npc_id FK
+    string correct_inference
+  }
+  SOLUTION_CLUE {
+    uuid id PK
+    uuid solution_id FK
+    int evidence_def_id FK
+    string reasoning_link
+  }
+  GENERATION_SLOT {
+    uuid id PK
+    uuid scenario_id FK
+    string slot_key
+    string slot_kind
+    int generation_order
+    string target_field
+    string variable_axis
+    json fallback_payload
+  }
+  GENERATION_CONSTRAINT {
+    uuid id PK
+    uuid slot_id FK
+    string rule_type
+    string rule_value
+  }
+  SLOT_TARGET_REF {
+    uuid id PK
+    uuid slot_id FK
+    string ref_table
+    uuid ref_id
+  }
+  PLAY_SESSION {
+    uuid id PK
+    uuid scenario_id FK
+    string anon_token
+    timestamp started_at
+    timestamp ended_at
+  }
+  GENERATED_CONTENT {
+    uuid id PK
+    uuid session_id FK
+    uuid slot_id FK
+    json content
+    boolean passed_validation
+    int retry_count
+    boolean used_fallback
+  }
+  PLAY_RESULT {
+    uuid id PK
+    uuid session_id FK
+    uuid accused_npc_id FK
+    string chosen_inference
+    int score
+    boolean is_correct
+  }`;
+  const { svg } = await mermaid.render("erdall-svg", def);
+  document.getElementById("erdall").innerHTML = svg;
+
+  // SVG 크기를 viewBox 기준으로 명시 설정
+  const svgEl = document.querySelector("#erdall svg.erDiagram");
+  if (svgEl) {
+    const vb = svgEl.viewBox.baseVal;
+    if (vb && vb.width > 0) {
+      svgEl.setAttribute("width", vb.width);
+      svgEl.setAttribute("height", vb.height);
+    }
+    svgEl.style.maxWidth = "none";
+  }
+
+  // ── Zoom & Pan ──────────────────────────────────────────────
+  const wrapper = document.getElementById("zoom-wrapper");
+  const erdall = document.getElementById("erdall");
+  let scale = 1,
+    tx = 0,
+    ty = 0;
+  let dragging = false,
+    dragMoved = false,
+    startX = 0,
+    startY = 0,
+    startTx = 0,
+    startTy = 0;
+
+  function applyTransform(animated = false) {
+    if (animated) {
+      erdall.style.transition = "transform 0.45s cubic-bezier(0.4,0,0.2,1)";
+      setTimeout(() => {
+        erdall.style.transition = "";
+      }, 480);
+    }
+    erdall.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+    document.getElementById("zoom-level").textContent =
+      Math.round(scale * 100) + "%";
+  }
+
+  function fitToScreen() {
+    const svg = document.querySelector("#erdall svg.erDiagram");
+    if (!svg) return;
+    const svgW = parseFloat(svg.getAttribute("width") || "0");
+    const svgH = parseFloat(svg.getAttribute("height") || "0");
+    if (!svgW || !svgH) return;
+    const ww = wrapper.clientWidth,
+      wh = wrapper.clientHeight;
+    const s = Math.min(ww / (svgW + 48), wh / (svgH + 48));
+    if (!isFinite(s) || s <= 0) return;
+    scale = s;
+    tx = (ww - svgW * s) / 2;
+    ty = (wh - svgH * s) / 2;
+    applyTransform(true);
+  }
+
+  setTimeout(fitToScreen, 100);
+
+  wrapper.addEventListener(
+    "wheel",
+    (e) => {
+      e.preventDefault();
+      const r = wrapper.getBoundingClientRect();
+      const mx = e.clientX - r.left,
+        my = e.clientY - r.top;
+      const d = e.deltaY < 0 ? 1.12 : 0.9;
+      const ns = Math.min(5, Math.max(0.05, scale * d));
+      tx = mx - (mx - tx) * (ns / scale);
+      ty = my - (my - ty) * (ns / scale);
+      scale = ns;
+      applyTransform();
+    },
+    { passive: false },
+  );
+
+  wrapper.addEventListener("mousedown", (e) => {
+    if (e.button !== 0) return;
+    dragging = true;
+    dragMoved = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    startTx = tx;
+    startTy = ty;
+    wrapper.classList.add("dragging");
+  });
+  window.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    if (Math.hypot(e.clientX - startX, e.clientY - startY) > 4)
+      dragMoved = true;
+    tx = startTx + (e.clientX - startX);
+    ty = startTy + (e.clientY - startY);
+    applyTransform();
+  });
+  window.addEventListener("mouseup", () => {
+    dragging = false;
+    wrapper.classList.remove("dragging");
+  });
+  wrapper.addEventListener("dblclick", fitToScreen);
+
+  let lastTouchDist = null;
+  wrapper.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.touches.length === 1) {
+        dragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTx = tx;
+        startTy = ty;
+      } else if (e.touches.length === 2) {
+        dragging = false;
+        lastTouchDist = Math.hypot(
+          e.touches[1].clientX - e.touches[0].clientX,
+          e.touches[1].clientY - e.touches[0].clientY,
+        );
+      }
+    },
+    { passive: true },
+  );
+  wrapper.addEventListener(
+    "touchmove",
+    (e) => {
+      e.preventDefault();
+      if (e.touches.length === 1 && dragging) {
+        tx = startTx + (e.touches[0].clientX - startX);
+        ty = startTy + (e.touches[0].clientY - startY);
+        applyTransform();
+      } else if (e.touches.length === 2 && lastTouchDist) {
+        const dist = Math.hypot(
+          e.touches[1].clientX - e.touches[0].clientX,
+          e.touches[1].clientY - e.touches[0].clientY,
+        );
+        const r = wrapper.getBoundingClientRect();
+        const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left,
+          my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top;
+        const ns = Math.min(5, Math.max(0.05, scale * (dist / lastTouchDist)));
+        tx = mx - (mx - tx) * (ns / scale);
+        ty = my - (my - ty) * (ns / scale);
+        scale = ns;
+        lastTouchDist = dist;
+        applyTransform();
+      }
+    },
+    { passive: false },
+  );
+  wrapper.addEventListener("touchend", () => {
+    dragging = false;
+    lastTouchDist = null;
+  });
+
+  document.getElementById("btn-zoom-in").addEventListener("click", () => {
+    const cx = wrapper.clientWidth / 2,
+      cy = wrapper.clientHeight / 2;
+    const ns = Math.min(5, scale * 1.3);
+    tx = cx - (cx - tx) * (ns / scale);
+    ty = cy - (cy - ty) * (ns / scale);
+    scale = ns;
+    applyTransform(true);
+  });
+  document.getElementById("btn-zoom-out").addEventListener("click", () => {
+    const cx = wrapper.clientWidth / 2,
+      cy = wrapper.clientHeight / 2;
+    const ns = Math.max(0.05, scale / 1.3);
+    tx = cx - (cx - tx) * (ns / scale);
+    ty = cy - (cy - ty) * (ns / scale);
+    scale = ns;
+    applyTransform(true);
+  });
+  document.getElementById("btn-fit").addEventListener("click", fitToScreen);
+
+  // ── Node click highlight ─────────────────────────────────────
+  // 노드 맵: entity 이름 → g.node element
+  const nodeMap = {};
+  document.querySelectorAll("#erdall svg .node").forEach((el) => {
+    const m = el.id.match(/entity-(.+)-\d+$/);
+    if (m) nodeMap[m[1]] = el;
+  });
+
+  // 엣지 맵: path elements with from/to parsed from id
+  const edgeList = [];
+  document.querySelectorAll('#erdall svg path[id*="entity-"]').forEach((el) => {
+    const m = el.id.match(/entity-(.+)-\d+_entity-(.+)-\d+_\d+$/);
+    if (m) edgeList.push({ el, from: m[1], to: m[2] });
+  });
+
+  // 인접 리스트
+  const adj = {};
+  edgeList.forEach(({ from, to }) => {
+    (adj[from] = adj[from] || new Set()).add(to);
+    (adj[to] = adj[to] || new Set()).add(from);
+  });
+
+  // 엣지 레이블: .edgeLabel foreignObject span 순서 = edgeList 순서
+  const edgeLabelEls = [
+    ...document.querySelectorAll(
+      "#erdall svg .edgeLabel foreignObject span, #erdall svg .edgeLabel span",
+    ),
+  ];
+
+  const selectedEntities = new Set();
+  const btnClear = document.getElementById("btn-clear");
+  const hint = document.getElementById("hint");
+
+  // 처음 힌트 2초 표시
+  hint.classList.add("show");
+  setTimeout(() => hint.classList.remove("show"), 2500);
+
+  function screenToSvg(screenX, screenY) {
+    return { x: (screenX - tx) / scale, y: (screenY - ty) / scale };
+  }
+
+  function zoomToElements(elements) {
+    // elements: array of DOM elements — get their current screen bboxes
+    const rects = elements
+      .map((el) => el.getBoundingClientRect())
+      .filter((r) => r.width > 0);
+    if (!rects.length) return;
+    const sLeft = Math.min(...rects.map((r) => r.left));
+    const sTop = Math.min(...rects.map((r) => r.top));
+    const sRight = Math.max(...rects.map((r) => r.right));
+    const sBottom = Math.max(...rects.map((r) => r.bottom));
+    // 현재 screen 좌표 → SVG 좌표 변환
+    const vl = (sLeft - tx) / scale;
+    const vt = (sTop - ty) / scale;
+    const vr = (sRight - tx) / scale;
+    const vb = (sBottom - ty) / scale;
+    const pad = 80;
+    const ww = wrapper.clientWidth,
+      wh = wrapper.clientHeight;
+    const ns = Math.min(
+      ww / (vr - vl + pad * 2),
+      wh / (vb - vt + pad * 2),
+      2.5,
+    );
+    const cx = (vl + vr) / 2,
+      cy = (vt + vb) / 2;
+    tx = ww / 2 - cx * ns;
+    ty = wh / 2 - cy * ns;
+    scale = ns;
+    applyTransform(true);
+  }
+
+  function clearSelection() {
+    selectedEntities.clear();
+    Object.values(nodeMap).forEach((el) => {
+      el.style.opacity = "1";
+      el.style.filter = "";
+    });
+    edgeList.forEach(({ el }) => {
+      el.style.opacity = "1";
+      el.style.strokeWidth = "";
+    });
+    edgeLabelEls.forEach((el) => {
+      el.style.opacity = "1";
+    });
+    btnClear.style.display = "none";
+  }
+
+  function applyHighlight() {
+    if (selectedEntities.size === 0) { clearSelection(); return; }
+
+    let highlighted;
+    let isActiveEdge;
+
+    if (selectedEntities.size === 1) {
+      // 단일 선택: 연결된 이웃 노드 전부 표시
+      const name = [...selectedEntities][0];
+      const connected = adj[name] || new Set();
+      highlighted = new Set([name, ...connected]);
+      isActiveEdge = (from, to) => from === name || to === name;
+    } else {
+      // 다중 선택: 선택된 노드들 사이 경로 + 마지막 노드의 이웃 전부 표시
+      const lastNode = [...selectedEntities][selectedEntities.size - 1];
+      highlighted = new Set(selectedEntities);
+      (adj[lastNode] || new Set()).forEach((c) => highlighted.add(c));
+      isActiveEdge = (from, to) =>
+        (selectedEntities.has(from) && selectedEntities.has(to)) ||
+        from === lastNode ||
+        to === lastNode;
+    }
+
+    // 노드 opacity / 글로우
+    Object.entries(nodeMap).forEach(([n, el]) => {
+      el.style.opacity = highlighted.has(n) ? "1" : "0.1";
+      el.style.filter = selectedEntities.has(n)
+        ? "drop-shadow(0 0 6px #3b6ef0) drop-shadow(0 0 12px #3b6ef080)"
+        : "";
+    });
+
+    // 엣지 opacity + 두께
+    edgeList.forEach(({ el, from, to }, i) => {
+      const active = isActiveEdge(from, to);
+      el.style.opacity = active ? "1" : "0.05";
+      el.style.strokeWidth = active ? "2.5px" : "";
+      if (edgeLabelEls[i])
+        edgeLabelEls[i].style.opacity = active ? "1" : "0.05";
+    });
+
+    // 줌: highlighted 노드 + active 엣지 범위에 맞춤
+    const targetNodes = [...highlighted].map((n) => nodeMap[n]).filter(Boolean);
+    const targetEdges = edgeList
+      .filter((e) => isActiveEdge(e.from, e.to))
+      .map((e) => e.el);
+    zoomToElements([...targetNodes, ...targetEdges]);
+
+    btnClear.style.display = "";
+  }
+
+  function selectEntity(name, additive = false) {
+    if (!additive) {
+      // 일반 클릭: 같은 노드면 해제, 아니면 단독 선택
+      if (selectedEntities.size === 1 && selectedEntities.has(name)) {
+        clearSelection();
+        return;
+      }
+      selectedEntities.clear();
+      selectedEntities.add(name);
+    } else {
+      // Ctrl+클릭: 토글 추가/제거
+      if (selectedEntities.has(name)) {
+        selectedEntities.delete(name);
+      } else {
+        selectedEntities.add(name);
+      }
+    }
+    applyHighlight();
+  }
+
+  // 노드 클릭 등록
+  Object.entries(nodeMap).forEach(([name, el]) => {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", (e) => {
+      if (dragMoved) return;
+      e.stopPropagation();
+      selectEntity(name, e.ctrlKey || e.metaKey);
+    });
+  });
+
+  // 배경 클릭 → 선택 해제 (드래그는 무시)
+  wrapper.addEventListener("click", (e) => {
+    if (dragMoved) return;
+    if (!e.target.closest(".node")) clearSelection();
+  });
+
+  btnClear.addEventListener("click", clearSelection);
+</script>
