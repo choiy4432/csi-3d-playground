@@ -34,8 +34,9 @@ export default function NpcPage({ data, onSave }) {
   }
 
   const handleAdd = () => {
-    if (!newForm.id.trim() || !newForm.name.trim()) return
-    setNpcs(ns => [...ns, { ...newForm }])
+    if (!newForm.name.trim()) return
+    const id = `npc-${String(npcs.length + 1).padStart(2, '0')}`
+    setNpcs(ns => [...ns, { ...newForm, id }])
     setNewForm({ ...EMPTY })
     setAdding(false)
   }
