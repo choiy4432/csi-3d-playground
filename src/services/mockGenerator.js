@@ -4,7 +4,7 @@ const STORAGE_KEY = 'csi_fixedLayer'
 const PLACEMENTS_KEY = 'csi_placements'
 
 // Room01.glb 플로어 기준 — 벽과 충분한 여백 확보
-const ROOM_BOUNDS = { x: [-2.5, 2.5], z: [-3.5, 1.5] }
+export const ROOM_BOUNDS = { x: [-2.5, 2.5], z: [-3.5, 1.5] }
 
 const POSITION_PRESETS = [
   [ 2.0, 0,  1.0],
