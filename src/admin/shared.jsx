@@ -19,17 +19,18 @@ export const S = {
   td: { padding: '8px 12px', borderBottom: '1px solid #f4f4f5', verticalAlign: 'middle' },
   input: {
     padding: '5px 8px', border: '1px solid #e4e4e7', borderRadius: 4,
-    fontSize: 13, width: '100%', boxSizing: 'border-box', background: '#fafafa',
-    outline: 'none',
+    fontSize: 13, width: '100%', boxSizing: 'border-box',
+    background: '#fafafa', color: '#1a1a1a', outline: 'none',
   },
   textarea: {
     padding: '6px 8px', border: '1px solid #e4e4e7', borderRadius: 4,
-    fontSize: 12, width: '100%', boxSizing: 'border-box', background: '#fafafa',
+    fontSize: 12, width: '100%', boxSizing: 'border-box',
+    background: '#fafafa', color: '#1a1a1a',
     fontFamily: 'monospace', resize: 'vertical', outline: 'none',
   },
   select: {
     padding: '5px 8px', border: '1px solid #e4e4e7', borderRadius: 4,
-    fontSize: 13, background: '#fafafa', width: '100%', outline: 'none',
+    fontSize: 13, background: '#fafafa', color: '#1a1a1a', width: '100%', outline: 'none',
   },
   warning: {
     background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6,

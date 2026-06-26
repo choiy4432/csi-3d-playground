@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, Field, SaveBar, IconBtn, S, btn, badge } from '../shared.jsx'
+import { Card, Field, SaveBar, IconBtn, S, btn } from '../shared.jsx'
 
 export default function SolutionPage({ data, onSave }) {
   const [solution, setSolution] = useState({ ...data.solution })
@@ -27,17 +27,17 @@ export default function SolutionPage({ data, onSave }) {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const culpritName = data.npcList.find(n => n.id === solution.culprit_npc_id)?.name ?? '—'
+  const culpritName = data.npcList.find(n => n.id === solution.culprit_npc_id)?.name ?? '선택 안 됨'
 
   return (
     <>
       <div style={S.warning}>
-        ⚠️ <strong>불변 원칙</strong> — 아래 필드는 런타임(플레이어 씬)에서 읽기 전용입니다.
-        에디터에서만 설정 가능합니다.
+        ⚠️ 이 페이지의 내용은 게임 플레이 중에 절대 변경되지 않는 정답 정보입니다.
+        시나리오 제작 단계에서만 수정하세요.
       </div>
 
-      <Card title="범인 및 정답 추론">
-        <Field label="범인 (culprit_npc_id)" hint={`현재 선택: ${culpritName}`}>
+      <Card title="범인 및 정답">
+        <Field label="범인" hint={`현재: ${culpritName}`}>
           <select
             style={S.select}
             value={solution.culprit_npc_id}
@@ -49,7 +49,10 @@ export default function SolutionPage({ data, onSave }) {
             ))}
           </select>
         </Field>
-        <Field label="정답 추론 (correct_inference)">
+        <Field
+          label="정답 추론문"
+          hint="학생이 최종 제출하는 추론 내용과 비교할 정답 문장입니다."
+        >
           <textarea
             style={{ ...S.textarea, height: 80 }}
             value={solution.correct_inference}
@@ -59,24 +62,20 @@ export default function SolutionPage({ data, onSave }) {
       </Card>
 
       <Card
-        title={`단서 체인 (SOLUTION_CLUE) — ${clues.length}개`}
+        title={`단서 목록 — ${clues.length}개`}
         action={<button style={btn('primary')} onClick={addClue}>+ 단서 추가</button>}
       >
         <table style={S.table}>
           <thead>
             <tr>
-              <th style={S.th}>ID</th>
-              <th style={S.th}>연결 증거물</th>
-              <th style={S.th}>추론 연결 고리 (reasoning_link)</th>
+              <th style={S.th}>관련 증거물</th>
+              <th style={S.th}>이 증거물이 범인을 가리키는 이유</th>
               <th style={S.th}></th>
             </tr>
           </thead>
           <tbody>
             {clues.map(clue => (
               <tr key={clue.id}>
-                <td style={S.td}>
-                  <code style={{ fontSize: 11, color: '#9399b2' }}>{clue.id}</code>
-                </td>
                 <td style={{ ...S.td, width: 200 }}>
                   <select
                     style={S.select}
@@ -93,6 +92,7 @@ export default function SolutionPage({ data, onSave }) {
                   <input
                     style={S.input}
                     value={clue.reasoning_link}
+                    placeholder="예: 이서연의 지문이 해당 물체에서 발견됐다."
                     onChange={e => updateClue(clue.id, 'reasoning_link', e.target.value)}
                   />
                 </td>
@@ -103,7 +103,7 @@ export default function SolutionPage({ data, onSave }) {
             ))}
             {clues.length === 0 && (
               <tr>
-                <td colSpan={4} style={{ ...S.td, color: '#a1a1aa', textAlign: 'center', padding: 20 }}>
+                <td colSpan={3} style={{ ...S.td, color: '#a1a1aa', textAlign: 'center', padding: 20 }}>
                   단서가 없습니다
                 </td>
               </tr>

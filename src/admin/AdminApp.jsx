@@ -5,16 +5,18 @@ import NpcPage from './pages/NpcPage.jsx'
 import SolutionPage from './pages/SolutionPage.jsx'
 import EvidencePage from './pages/EvidencePage.jsx'
 import SlotsPage from './pages/SlotsPage.jsx'
+import InfoPage from './pages/InfoPage.jsx'
 
 const STORAGE_KEY = 'csi_fixedLayer'
 
 const NAV_ITEMS = [
   { key: 'scenario', label: '📋 시나리오 정보' },
-  { key: 'npc',      label: '👥 NPC 관리' },
+  { key: 'npc',      label: '👥 등장인물 관리' },
   { key: 'solution', label: '🎯 정답 설정' },
-  { key: 'evidence', label: '🔍 증거물 카탈로그' },
-  { key: 'slots',    label: '⚙️ 생성 슬롯' },
+  { key: 'evidence', label: '🔍 증거물 목록' },
+  { key: 'slots',    label: '🤖 AI 생성 설정' },
   { key: 'preview',  label: '👁️ 미리보기' },
+  { key: 'info',     label: '📖 개발자 정보', divider: true },
 ]
 
 const S = {
@@ -107,6 +109,7 @@ export default function AdminApp() {
         <div><strong>미리보기</strong> 페이지 — 3단계에서 구현 예정</div>
       </div>
     ),
+    info: <InfoPage />,
   }
 
   return (
@@ -118,13 +121,17 @@ export default function AdminApp() {
         </div>
         <nav style={S.nav}>
           {NAV_ITEMS.map(item => (
-            <button
-              key={item.key}
-              style={S.navItem(page === item.key)}
-              onClick={() => setPage(item.key)}
-            >
-              {item.label}
-            </button>
+            <div key={item.key}>
+              {item.divider && (
+                <div style={{ borderTop: '1px solid #313244', margin: '8px 0' }} />
+              )}
+              <button
+                style={S.navItem(page === item.key)}
+                onClick={() => setPage(item.key)}
+              >
+                {item.label}
+              </button>
+            </div>
           ))}
         </nav>
         <button style={S.backBtn} onClick={() => { window.location.href = '/' }}>

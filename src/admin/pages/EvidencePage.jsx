@@ -1,6 +1,19 @@
 import { useState } from 'react'
 import { Card, Field, SaveBar, IconBtn, S, btn, badge } from '../shared.jsx'
 
+const MINIGAME_OPTIONS = [
+  { value: 'timing',     label: '정밀 조작 (슬라이딩 바)' },
+  { value: 'rapidclick', label: '반복 클릭 (연타)' },
+]
+const MINIGAME_LABEL = { timing: '정밀 조작', rapidclick: '반복 클릭' }
+const MINIGAME_COLOR = { timing: 'blue', rapidclick: 'yellow' }
+
+const DIFFICULTY_OPTIONS = [
+  { value: 'easy',   label: '쉬움' },
+  { value: 'normal', label: '보통' },
+  { value: 'hard',   label: '어려움' },
+]
+
 const EMPTY_EV = {
   id: '', name: '', file: '',
   colliderSize: [0.5, 1.0, 0.5],
@@ -40,23 +53,22 @@ function EvidenceModal({ ev, onClose, onConfirm }) {
         background: '#fff', borderRadius: 10, padding: 28, width: 460,
         maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
       }}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15 }}>증거물 편집</h3>
+        <h3 style={{ margin: '0 0 20px', fontSize: 15, color: '#1a1a1a' }}>증거물 편집</h3>
 
-        <Field label="ID">
-          <input style={S.input} value={form.id} placeholder="ev-05"
-            onChange={e => set('id', e.target.value)} />
-        </Field>
-        <Field label="이름">
+        <Field label="증거물 이름">
           <input style={S.input} value={form.name}
             onChange={e => set('name', e.target.value)} />
         </Field>
-        <Field label="GLB 파일" hint="public/models/ 기준 파일명">
-          <input style={S.input} value={form.file} placeholder="EvidenceName.glb"
+        <Field label="3D 모델 파일" hint="public/models/ 폴더에 있는 .glb 파일 이름">
+          <input style={S.input} value={form.file} placeholder="예: Brush.glb"
             onChange={e => set('file', e.target.value)} />
         </Field>
-        <Field label="콜라이더 크기 (W × H × D)">
+        <Field
+          label="충돌 영역 크기 (가로 × 높이 × 깊이)"
+          hint="3D 공간에서 학생이 클릭할 수 있는 영역의 크기입니다. 물체가 크면 값을 늘려주세요."
+        >
           <div style={{ display: 'flex', gap: 8 }}>
-            {['W', 'H', 'D'].map((axis, i) => (
+            {['가로', '높이', '깊이'].map((axis, i) => (
               <div key={axis} style={{ flex: 1 }}>
                 <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 3 }}>{axis}</label>
                 <input type="number" step="0.1" min="0.1"
@@ -71,29 +83,31 @@ function EvidenceModal({ ev, onClose, onConfirm }) {
 
         <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
           <p style={{ fontSize: 12, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', marginBottom: 12 }}>
-            미니게임
+            채증 활동
           </p>
-          <Field label="타입">
+          <Field label="활동 유형" hint="학생이 이 증거물을 채증할 때 진행할 미니게임 방식입니다.">
             <select style={S.select} value={form.miniGame.type} onChange={e => changeType(e.target.value)}>
-              <option value="timing">timing — 슬라이딩 바</option>
-              <option value="rapidclick">rapidclick — 연타</option>
+              {MINIGAME_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </Field>
-          <Field label="라벨 (채증 동작 설명)">
+          <Field label="활동 안내 문구" hint="미니게임 화면에 표시될 짧은 설명입니다.">
             <input style={S.input} value={form.miniGame.label}
+              placeholder="예: 지문 파우더 도포"
               onChange={e => setMG('label', e.target.value)} />
           </Field>
           {form.miniGame.type === 'timing' ? (
             <Field label="난이도">
               <select style={S.select} value={form.miniGame.difficulty} onChange={e => setMG('difficulty', e.target.value)}>
-                <option value="easy">easy</option>
-                <option value="normal">normal</option>
-                <option value="hard">hard</option>
+                {DIFFICULTY_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </Field>
           ) : (
             <>
-              <Field label="목표 클릭 수 (target)">
+              <Field label="목표 클릭 횟수" hint="학생이 이 횟수만큼 클릭하면 채증 성공입니다.">
                 <input type="number" min={1} style={S.input}
                   value={form.miniGame.target ?? 5}
                   onChange={e => setMG('target', Number(e.target.value))} />
@@ -153,36 +167,32 @@ export default function EvidencePage({ data, onSave }) {
       )}
 
       <Card
-        title={`증거물 카탈로그 (${evidences.length})`}
+        title={`증거물 목록 (${evidences.length}개)`}
         action={<button style={btn('primary')} onClick={openAdd}>+ 증거물 추가</button>}
       >
         <table style={S.table}>
           <thead>
             <tr>
-              <th style={S.th}>ID</th>
               <th style={S.th}>이름</th>
-              <th style={S.th}>GLB 파일</th>
-              <th style={S.th}>콜라이더 (W×H×D)</th>
-              <th style={S.th}>미니게임</th>
+              <th style={S.th}>3D 모델</th>
+              <th style={S.th}>크기 (가로×높이×깊이)</th>
+              <th style={S.th}>채증 활동</th>
               <th style={S.th}></th>
             </tr>
           </thead>
           <tbody>
             {evidences.map(ev => (
               <tr key={ev.id}>
-                <td style={S.td}>
-                  <code style={{ fontSize: 11, color: '#9399b2' }}>{ev.id}</code>
-                </td>
                 <td style={S.td}>{ev.name}</td>
                 <td style={S.td}>
-                  <code style={{ fontSize: 11 }}>{ev.file}</code>
+                  <code style={{ fontSize: 11, color: '#52525b' }}>{ev.file}</code>
                 </td>
                 <td style={S.td}>
                   {ev.colliderSize.join(' × ')}
                 </td>
                 <td style={S.td}>
-                  <span style={badge(ev.miniGame.type === 'timing' ? 'blue' : 'yellow')}>
-                    {ev.miniGame.type}
+                  <span style={badge(MINIGAME_COLOR[ev.miniGame.type] ?? 'gray')}>
+                    {MINIGAME_LABEL[ev.miniGame.type] ?? ev.miniGame.type}
                   </span>
                   {' '}
                   <span style={{ color: '#52525b' }}>{ev.miniGame.label}</span>
