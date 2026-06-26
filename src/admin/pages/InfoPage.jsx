@@ -156,6 +156,7 @@ export default function InfoPage() {
           ['증거물 이름',         'evidenceDefs[].name',        '게임 내 표시 이름입니다.'],
           ['3D 모델 파일',        'evidenceDefs[].file',        'public/models/ 기준 .glb 파일명입니다.'],
           ['충돌 영역 크기',      'evidenceDefs[].colliderSize','[W, H, D] 배열. Rapier CuboidCollider 크기(Three.js 단위).'],
+          ['(내부 ID)',           'evidenceDefs[].id',          '"ev-01" 형식. 자동 부여. 단서 설정(evidence_def_id)에서 참조합니다.'],
         ]} />
         <h3 style={T.h3}>채증 활동 (miniGame)</h3>
         <FieldTable rows={[
@@ -163,7 +164,7 @@ export default function InfoPage() {
           ['활동 안내 문구', 'miniGame.label',      '미니게임 오버레이에 표시될 설명 문자열입니다.'],
           ['난이도',         'miniGame.difficulty', 'timing 전용. "easy" / "normal" / "hard" — 바 속도·구간 크기 결정.'],
           ['목표 클릭 횟수', 'miniGame.target',     'rapidclick 전용. 이 횟수 클릭 시 성공.'],
-          ['제한 시간',      'miniGame.time',       'rapidclick 전용. 초 단위 타이머.'],
+          ['제한 시간 (초)',  'miniGame.time',       'rapidclick 전용. 초 단위 타이머.'],
         ]} />
       </Section>
 
@@ -185,6 +186,7 @@ export default function InfoPage() {
 
         <h3 style={T.h3}>GENERATION_SLOT 테이블 필드</h3>
         <FieldTable rows={[
+          ['순서',           'generation_order',   '슬롯 실행 순서. S3=1, S4=2, S1=3, S2=4, S5=5.'],
           ['항목 (슬롯 키)',  'slot_key',           '"S1"~"S5". 생성 파이프라인의 식별자입니다.'],
           ['생성 유형',      'slot_kind',          'scene_narrative / suspect_alibi / space_placement / evidence_placement / npc_dialogue'],
           ['적용 위치',      'target_field',       '생성 결과가 저장될 DB 필드 경로 (예: SPACE.placement / NPC.dialogue).'],
