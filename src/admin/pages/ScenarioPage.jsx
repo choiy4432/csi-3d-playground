@@ -81,8 +81,8 @@ export default function ScenarioPage({ data, onSave }) {
                   <input
                     type="number" min={0} max={100}
                     style={{ ...S.input, width: 60 }}
-                    value={config[band].damage}
-                    onChange={e => updateConfig(band, 'damage', Number(e.target.value))}
+                    value={config[band].evidence_damage_rate}
+                    onChange={e => updateConfig(band, 'evidence_damage_rate', Number(e.target.value))}
                   />
                 </td>
                 <td style={S.td}>
@@ -97,8 +97,8 @@ export default function ScenarioPage({ data, onSave }) {
                   <input
                     type="number" min={1}
                     style={{ ...S.input, width: 50 }}
-                    value={config[band].time}
-                    onChange={e => updateConfig(band, 'time', Number(e.target.value))}
+                    value={config[band].experience_time}
+                    onChange={e => updateConfig(band, 'experience_time', Number(e.target.value))}
                   />
                 </td>
                 <td style={S.td}>

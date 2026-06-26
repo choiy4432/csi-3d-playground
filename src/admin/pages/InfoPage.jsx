@@ -105,9 +105,9 @@ export default function InfoPage() {
         <h3 style={T.h3}>CONFIG 테이블 (grade_band 별 파라미터)</h3>
         <FieldTable rows={[
           ['대상 학생',       'config[band].label',                '학년 그룹 설명 문자열입니다.'],
-          ['증거 훼손율 (%)', 'config[band].damage',        '해당 학년에서 증거물 중 훼손된 비율입니다.'],
-          ['용의자 수',       'config[band].suspect_count', '게임에 등장하는 용의자 수입니다.'],
-          ['체험 시간 (분)',  'config[band].time',          '전체 게임 제한 시간입니다.'],
+          ['증거 훼손율 (%)', 'config[band].evidence_damage_rate', '해당 학년에서 증거물 중 훼손된 비율입니다.'],
+          ['용의자 수',       'config[band].suspect_count',        '게임에 등장하는 용의자 수입니다.'],
+          ['체험 시간 (분)',  'config[band].experience_time',      '전체 게임 제한 시간입니다.'],
           ['증거물 수',       'config[band].evidence_count',       'AI가 씬에 배치할 증거물 개수입니다.'],
         ]} />
         <div style={T.note}>

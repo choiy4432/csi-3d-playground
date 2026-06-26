@@ -6,9 +6,9 @@
     "case_type": "절도"
   },
   "config": {
-    "A": { "label": "초등 저학년", "damage": 30, "suspect_count": 3, "time": 5, "evidence_count": 3 },
-    "B": { "label": "초등 고학년", "damage": 50, "suspect_count": 4, "time": 8, "evidence_count": 4 },
-    "C": { "label": "중학생",      "damage": 80, "suspect_count": 5, "time": 10, "evidence_count": 5 }
+    "A": { "label": "초등 저학년", "evidence_damage_rate": 30, "suspect_count": 3, "experience_time": 5, "evidence_count": 3 },
+    "B": { "label": "초등 고학년", "evidence_damage_rate": 50, "suspect_count": 4, "experience_time": 8, "evidence_count": 4 },
+    "C": { "label": "중학생",      "evidence_damage_rate": 80, "suspect_count": 5, "experience_time": 10, "evidence_count": 5 }
   },
   "npcList": [
     { "id": "npc-01", "name": "김민준", "npc_kind": "suspect", "profile": "미술관 큐레이터" },
