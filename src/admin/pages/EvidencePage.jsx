@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Card, Field, SaveBar, IconBtn, S, btn, badge } from '../shared.jsx'
 
+const _MODEL_GLOB = import.meta.glob('../../../public/models/*.glb')
+const AVAILABLE_MODELS = Object.keys(_MODEL_GLOB).map(p => p.split('/').pop()).sort()
+
 const MINIGAME_OPTIONS = [
   { value: 'timing',     label: '정밀 조작 (슬라이딩 바)' },
   { value: 'rapidclick', label: '반복 클릭 (연타)' },
@@ -59,9 +62,13 @@ function EvidenceModal({ ev, onClose, onConfirm }) {
           <input style={S.input} value={form.name}
             onChange={e => set('name', e.target.value)} />
         </Field>
-        <Field label="3D 모델 파일" hint="public/models/ 폴더에 있는 .glb 파일 이름">
-          <input style={S.input} value={form.file} placeholder="예: Brush.glb"
-            onChange={e => set('file', e.target.value)} />
+        <Field label="3D 모델 파일" hint="public/models/ 폴더에 있는 .glb 파일을 선택하세요.">
+          <select style={S.select} value={form.file} onChange={e => set('file', e.target.value)}>
+            <option value="">— 파일 선택 —</option>
+            {AVAILABLE_MODELS.map(f => (
+              <option key={f} value={f}>{f}</option>
+            ))}
+          </select>
         </Field>
         <Field
           label="충돌 영역 크기 (가로 × 높이 × 깊이)"
@@ -185,7 +192,7 @@ export default function EvidencePage({ data, onSave }) {
               <tr key={ev.id}>
                 <td style={S.td}>{ev.name}</td>
                 <td style={S.td}>
-                  <code style={{ fontSize: 11, color: '#52525b' }}>{ev.file}</code>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#374151' }}>{ev.file}</span>
                 </td>
                 <td style={S.td}>
                   {ev.colliderSize.join(' × ')}

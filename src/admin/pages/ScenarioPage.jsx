@@ -39,8 +39,8 @@ export default function ScenarioPage({ data, onSave }) {
           />
         </Field>
         <Field
-          label="기본 학년 그룹"
-          hint="플레이어가 선택하지 않을 때 적용되는 기본 대상 학년입니다."
+          label="대상 학년"
+          hint="이 시나리오 전체에 고정 적용되는 대상 학년입니다."
         >
           <select
             style={S.select}

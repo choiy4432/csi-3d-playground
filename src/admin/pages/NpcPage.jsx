@@ -28,7 +28,9 @@ export default function NpcPage({ data, onSave }) {
 
   const handleDelete = (id) => {
     if (!confirm('이 등장인물을 삭제하시겠습니까?')) return
-    setNpcs(ns => ns.filter(n => n.id !== id))
+    const updated = npcs.filter(n => n.id !== id)
+    setNpcs(updated)
+    onSave({ ...data, npcList: updated })
   }
 
   const handleAdd = () => {

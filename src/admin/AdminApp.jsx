@@ -56,7 +56,7 @@ const S = {
     height: 52, background: '#fff', borderBottom: '1px solid #e0e0e0',
     display: 'flex', alignItems: 'center', padding: '0 24px', gap: 12, flexShrink: 0,
   },
-  topbarTitle: { fontSize: 16, fontWeight: 600, margin: 0, flex: 1 },
+  topbarTitle: { fontSize: 16, fontWeight: 600, margin: 0, flex: 1, color: '#1a1a1a' },
   exportBtn: {
     padding: '5px 12px', border: '1px solid #e4e4e7', borderRadius: 5,
     background: '#fafafa', color: '#52525b', cursor: 'pointer', fontSize: 12,
