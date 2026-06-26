@@ -14,6 +14,10 @@
 
 <!-- 실행 가능하며 아직 시작하지 않은 항목 -->
 - [ ] space 추가하여 onclick으로 방 전환할 때, 양 방에서 동일 object 배치 시 scale 변화 +@ 관측
+- [ ] 생성층 씬 시나리오 선택 UI를 플레이 화면 DEV 패널 → 어드민으로 이동
+  - `SCENE_SCENARIOS` / `DEFAULT_LIGHTING` 를 `src/constants/sceneScenarios.js`로 분리
+  - 어드민에 새 페이지 추가 (씬 시나리오 선택 + `localStorage` 저장, key: `csi_active_scenario`)
+  - `SceneWrapper.jsx` DEV 패널에서 시나리오 버튼 제거 → `localStorage`에서 읽도록 수정
 
 <details>
 <summary>📌 관리자 에디터 + 가상 생성층 (미완료 2 / 13)</summary>
