@@ -36,6 +36,8 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 코드 검토·테스트·타입·프롬프트·DB 마이그레이션 검토는 각 에이전트가 담당한다.
 `.claude/agents/` 참고.
 
+> **ERD 규칙**: `src/data/fixedLayer.json` 스키마 변경(테이블 추가·필드 추가·삭제·이름 변경) 시 `docs/erd-impl-status.md`를 반드시 함께 업데이트한다.
+
 > **TODO 규칙**: `docs/TODO.md` 관련 작업은 **무조건 `todo-manager` 에이전트를 Agent 도구로 호출**한다.
 >
 > - 모델은 `todo-manager` 에이전트가 작업 복잡도에 따라 자율적으로 판단한다.

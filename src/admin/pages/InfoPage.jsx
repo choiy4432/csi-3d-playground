@@ -157,8 +157,8 @@ export default function InfoPage() {
             ],
             [
               "사건 유형",
-              "scenario.case_type",
-              "절도·살인 등 사건 종류입니다.",
+              "scenario.case_type_id",
+              "CASE_TYPE 테이블의 id 참조. '사건 유형 관리' 탭에서 선택합니다.",
             ],
             [
               "기본 학년 그룹",
@@ -197,6 +197,51 @@ export default function InfoPage() {
           💡 <Code>grade_band</Code> 값(A/B/C)은 슬롯 생성 시 AI 프롬프트
           조립에도 사용됩니다. 난이도 파라미터를 변경하면 생성 결과도
           달라집니다.
+        </div>
+      </Section>
+
+      <Section title="🗂️ 사건 유형 관리 — 내부 구조">
+        <p style={T.p}>
+          화면에서 "사건 유형 관리" 탭에서 편집하는 데이터입니다.{" "}
+          <Code>scenario.case_type_id</Code>는 이 테이블의 <Code>id</Code>를
+          참조합니다.
+        </p>
+        <h3 style={T.h3}>CASE_TYPE 테이블</h3>
+        <FieldTable
+          rows={[
+            ["(내부 ID)", "caseTypes[].id", '"ct-01" 형식. 자동 부여.'],
+            ["유형명", "caseTypes[].name", "절도·살인·방화 등 사건 종류 이름."],
+            ["설명", "caseTypes[].description", "사건 유형 간단 설명."],
+          ]}
+        />
+        <h3 style={T.h3}>CASE_JOB_RULE 테이블 (직업 제한)</h3>
+        <FieldTable
+          rows={[
+            ["(내부 ID)", "caseJobRules[].id", '"cjr-01" 형식. 자동 부여.'],
+            ["사건 유형", "caseJobRules[].case_type_id", "FK → CASE_TYPE.id."],
+            ["허용 직업 키워드", "caseJobRules[].job_keyword", "이 사건 유형에서 AI가 생성할 수 있는 NPC 직업 키워드."],
+          ]}
+        />
+        <h3 style={T.h3}>CASE_EVIDENCE_RULE 테이블 (증거 카테고리 제한)</h3>
+        <FieldTable
+          rows={[
+            ["(내부 ID)", "caseEvidenceRules[].id", '"cer-01" 형식. 자동 부여.'],
+            ["사건 유형", "caseEvidenceRules[].case_type_id", "FK → CASE_TYPE.id."],
+            ["허용 증거 카테고리", "caseEvidenceRules[].evidence_category", "이 사건 유형에서 유효한 증거물 종류."],
+          ]}
+        />
+        <h3 style={T.h3}>CASE_TARGET_RULE 테이블 (타겟 유형 제한)</h3>
+        <FieldTable
+          rows={[
+            ["(내부 ID)", "caseTargetRules[].id", '"ctr-01" 형식. 자동 부여.'],
+            ["사건 유형", "caseTargetRules[].case_type_id", "FK → CASE_TYPE.id."],
+            ["허용 타겟 유형", "caseTargetRules[].allowed_target_type", "이 사건 유형에서 범행 대상이 될 수 있는 물품 유형."],
+          ]}
+        />
+        <div style={T.note}>
+          💡 세 규칙 테이블은 현재 <strong>문서화 목적</strong>으로 저장됩니다.
+          추후 AI 슬롯 생성 시 프롬프트 조립 단계에서 제약 조건으로 주입될
+          예정입니다.
         </div>
       </Section>
 
