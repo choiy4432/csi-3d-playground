@@ -5,6 +5,8 @@ import NpcPage from './pages/NpcPage.jsx'
 import SolutionPage from './pages/SolutionPage.jsx'
 import EvidencePage from './pages/EvidencePage.jsx'
 import SlotsPage from './pages/SlotsPage.jsx'
+import CaseTypePage from './pages/CaseTypePage.jsx'
+import ScenePage from './pages/ScenePage.jsx'
 import PreviewPage from './pages/PreviewPage.jsx'
 import InfoPage from './pages/InfoPage.jsx'
 
@@ -16,6 +18,8 @@ const NAV_ITEMS = [
   { key: 'solution', label: '🎯 정답 설정' },
   { key: 'evidence', label: '🔍 증거물 목록' },
   { key: 'slots',    label: '🤖 AI 생성 설정' },
+  { key: 'casetype', label: '🗂️ 사건 유형 관리' },
+  { key: 'scene',    label: '🎬 씬 시나리오' },
   { key: 'preview',  label: '👁️ 미리보기' },
   { key: 'info',     label: '📖 개발자 정보', divider: true },
 ]
@@ -104,6 +108,8 @@ export default function AdminApp() {
     solution: <SolutionPage data={data} onSave={handleSave} />,
     evidence: <EvidencePage data={data} onSave={handleSave} />,
     slots:    <SlotsPage    data={data} onSave={handleSave} />,
+    casetype: <CaseTypePage data={data} onSave={handleSave} />,
+    scene:    <ScenePage />,
     preview:  <PreviewPage data={data} />,
     info: <InfoPage />,
   }
