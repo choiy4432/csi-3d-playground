@@ -30,13 +30,20 @@ export default function ScenarioPage({ data, onSave }) {
             onChange={e => updateScenario('title', e.target.value)}
           />
         </Field>
-        <Field label="사건 유형">
-          <input
-            style={S.input}
-            value={scenario.case_type}
-            onChange={e => updateScenario('case_type', e.target.value)}
-            placeholder="예: 절도, 살인, 방화"
-          />
+        <Field
+          label="사건 유형"
+          hint="유형 목록은 '사건 유형 관리' 탭에서 추가·편집할 수 있습니다."
+        >
+          <select
+            style={S.select}
+            value={scenario.case_type_id ?? ''}
+            onChange={e => updateScenario('case_type_id', e.target.value)}
+          >
+            <option value="" disabled>— 사건 유형 선택 —</option>
+            {(data.caseTypes ?? []).map(ct => (
+              <option key={ct.id} value={ct.id}>{ct.name}</option>
+            ))}
+          </select>
         </Field>
         <Field
           label="대상 학년"
