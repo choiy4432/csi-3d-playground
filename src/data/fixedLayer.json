@@ -3,8 +3,25 @@
     "id": "scenario-001",
     "title": "미술관 절도 사건",
     "grade_band_id": "B",
-    "case_type": "절도"
+    "case_type_id": "ct-01"
   },
+  "caseTypes": [
+    { "id": "ct-01", "name": "절도", "description": "재산 침해형 범죄. 물품·작품 등의 불법 탈취." }
+  ],
+  "caseJobRules": [
+    { "id": "cjr-01", "case_type_id": "ct-01", "job_keyword": "경비원" },
+    { "id": "cjr-02", "case_type_id": "ct-01", "job_keyword": "청소부" },
+    { "id": "cjr-03", "case_type_id": "ct-01", "job_keyword": "큐레이터" }
+  ],
+  "caseEvidenceRules": [
+    { "id": "cer-01", "case_type_id": "ct-01", "evidence_category": "지문" },
+    { "id": "cer-02", "case_type_id": "ct-01", "evidence_category": "족적" },
+    { "id": "cer-03", "case_type_id": "ct-01", "evidence_category": "파편" }
+  ],
+  "caseTargetRules": [
+    { "id": "ctr-01", "case_type_id": "ct-01", "allowed_target_type": "미술품" },
+    { "id": "ctr-02", "case_type_id": "ct-01", "allowed_target_type": "귀금속" }
+  ],
   "config": {
     "A": { "label": "초등 저학년", "evidence_damage_rate": 30, "suspect_count": 3, "experience_time": 5, "evidence_count": 3 },
     "B": { "label": "초등 고학년", "evidence_damage_rate": 50, "suspect_count": 4, "experience_time": 8, "evidence_count": 4 },
@@ -67,9 +84,9 @@
       "fallback_payload": { "alibi": "알리바이 없음" }
     },
     {
-      "id": "slot-s1", "slot_key": "S1", "slot_kind": "npc_detail",
-      "generation_order": 3, "target_field": "NPC.description", "variable_axis": "grade_band",
-      "fallback_payload": { "description": "기본 용의자 설명" }
+      "id": "slot-s1", "slot_key": "S1", "slot_kind": "space_placement",
+      "generation_order": 3, "target_field": "SPACE.placement", "variable_axis": "grade_band",
+      "fallback_payload": { "placement": "기본 공간 배치" }
     },
     {
       "id": "slot-s2", "slot_key": "S2", "slot_kind": "evidence_placement",
@@ -77,9 +94,9 @@
       "fallback_payload": {}
     },
     {
-      "id": "slot-s5", "slot_key": "S5", "slot_kind": "inference_prompt",
-      "generation_order": 5, "target_field": "PLAY_RESULT.prompt", "variable_axis": "grade_band",
-      "fallback_payload": { "prompt": "범인을 추론하세요." }
+      "id": "slot-s5", "slot_key": "S5", "slot_kind": "npc_dialogue",
+      "generation_order": 5, "target_field": "NPC.dialogue", "variable_axis": "grade_band",
+      "fallback_payload": { "dialogue": "기본 NPC 대사" }
     }
   ],
   "generationConstraints": [

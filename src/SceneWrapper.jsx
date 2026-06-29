@@ -6,93 +6,13 @@ import CrimeScene from './CrimeScene'
 import Hand from './Hand'
 import MiniGame from './MiniGame'
 import Room from './Room'
+import RoomPlaceholder from './RoomPlaceholder'
+import DoorPortal from './DoorPortal'
+import { Room2Objects, Room3Objects } from './RoomObjects'
 import PlayerController from './PlayerController'
 import DebugLight from './DebugLight'
 import { loadPlacements, loadFixedLayer } from './services/mockGenerator'
-
-const DEFAULT_LIGHTING = {
-  ambient: 0.4,
-  points: [
-    { intensity: 15, color: '#ffffff' },
-    { intensity: 8,  color: '#ffe8c0' },
-    { intensity: 8,  color: '#ffe8c0' },
-  ],
-}
-
-const SCENE_SCENARIOS = [
-  {
-    id: 'night',
-    label: '야간 수사',
-    lighting: {
-      ambient: 0.03,
-      points: [
-        { intensity: 3,  color: '#2233aa' },
-        { intensity: 1.5, color: '#112266' },
-        { intensity: 1.5, color: '#112266' },
-      ],
-      roomLight: { color: '#1122aa', intensity: 3 },
-    },
-    override: {
-      brokenGlass: { emissive: '#0011aa', emissiveIntensity: 0.6 },
-      floor:       { emissive: '#000011', emissiveIntensity: 0.0, color: '#050308' },
-      roofGlass:   { opacity: 0.05 },
-    },
-  },
-  {
-    id: 'fresh_crime',
-    label: '범행 직후',
-    lighting: {
-      ambient: 0.06,
-      points: [
-        { intensity: 6,  color: '#ff2200' },
-        { intensity: 3,  color: '#aa1100' },
-        { intensity: 3,  color: '#aa1100' },
-      ],
-      roomLight: { color: '#aa1100', intensity: 4 },
-    },
-    override: {
-      brokenGlass: { emissive: '#ff2200', emissiveIntensity: 2.5 },
-      floor:       { emissive: '#1a0000', emissiveIntensity: 0.4 },
-      roofGlass:   { opacity: 0.15, emissive: '#330000', emissiveIntensity: 0.8 },
-    },
-  },
-  {
-    id: 'forensic',
-    label: '법의학 조명',
-    lighting: {
-      ambient: 0.8,
-      points: [
-        { intensity: 25, color: '#ddeeff' },
-        { intensity: 14, color: '#cceeff' },
-        { intensity: 14, color: '#cceeff' },
-      ],
-      roomLight: { color: '#cceeff', intensity: 18 },
-    },
-    override: {
-      brokenGlass: { emissive: '#aaddff', emissiveIntensity: 1.5 },
-      floor:       { emissive: '#112233', emissiveIntensity: 0.3 },
-      roofGlass:   { opacity: 0.8, emissive: '#aaddff', emissiveIntensity: 0.5 },
-    },
-  },
-  {
-    id: 'tense',
-    label: '긴장감',
-    lighting: {
-      ambient: 0.05,
-      points: [
-        { intensity: 5,  color: '#ff4400' },
-        { intensity: 2,  color: '#aa2200' },
-        { intensity: 2,  color: '#aa2200' },
-      ],
-      roomLight: { color: '#aa3300', intensity: 3 },
-    },
-    override: {
-      brokenGlass: { emissive: '#ff6600', emissiveIntensity: 2 },
-      floor:       { emissive: '#220500', emissiveIntensity: 0.5 },
-      roofGlass:   { opacity: 0.08, emissive: '#331100', emissiveIntensity: 0.5 },
-    },
-  },
-]
+import { DEFAULT_LIGHTING, SCENE_SCENARIOS, loadRoomScenarios } from './constants/sceneScenarios'
 
 function Kbd({ children }) {
   return (
@@ -112,6 +32,17 @@ function Dot({ color }) {
   )
 }
 
+// PlayerController의 BODY_Y와 동일한 값 (CAPSULE_HALF + CAPSULE_R = 0.5 + 0.3)
+const SPAWN_Y = 0.8
+
+// [toRoom]_from_[fromRoom] → 진입 직후 스폰 위치 및 바라보는 방향
+const ROOM_ENTRY = {
+  '2_from_1': { pos: [0, SPAWN_Y, -3.5], yaw: Math.PI },  // 남쪽 포털에서 나와 북쪽을 바라봄
+  '1_from_2': { pos: [0, SPAWN_Y, -2.7], yaw: Math.PI },  // 남쪽 포털에서 나와 북쪽을 바라봄
+  '3_from_2': { pos: [0, SPAWN_Y,  3.5], yaw: 0 },        // 북쪽 포털에서 나와 남쪽을 바라봄
+  '2_from_3': { pos: [0, SPAWN_Y,  3.5], yaw: 0 },        // 북쪽 포털에서 나와 남쪽을 바라봄
+}
+
 export default function SceneWrapper() {
   const [evidences, setEvidences]       = useState(() => {
     const data = loadFixedLayer()
@@ -124,9 +55,13 @@ export default function SceneWrapper() {
   const [debugMode, setDebugMode]           = useState(false)
   const [lightIsolation, setLightIsolation] = useState(false)
   const [hintCollapsed, setHintCollapsed]   = useState(false)
-  const [activeScenario, setActiveScenario] = useState(null)
+  const scenariosByRoom = useRef(loadRoomScenarios())
   const [grabTrigger, setGrabTrigger]     = useState(0)
   const [activeMiniGame, setActiveMiniGame] = useState(null) // evidence object | null
+  const [currentRoom, setCurrentRoom]         = useState(1)
+  const [hoveredDoor, setHoveredDoor]         = useState(null)
+  const [hoveredExamine, setHoveredExamine]   = useState(null)
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState(null)
   const playerRef = useRef()
 
   // 디버그 토글 (1), 라이트 아이솔레이션 토글 (2 — dev 모드일 때만)
@@ -161,8 +96,36 @@ export default function SceneWrapper() {
   }
 
   function handleHover(info) {
-    setHoveredId(info?.id ?? null)
-    setInRange(info?.inRange ?? false)
+    if (info?.type === 'evidence') {
+      setHoveredId(info.id);    setInRange(info.inRange)
+      setHoveredDoor(null);     setHoveredExamine(null)
+    } else if (info?.type === 'door') {
+      setHoveredId(null);       setInRange(false)
+      setHoveredDoor(info);     setHoveredExamine(null)
+    } else if (info?.type === 'examine') {
+      setHoveredId(null);       setInRange(false)
+      setHoveredDoor(null);     setHoveredExamine(info)
+    } else {
+      setHoveredId(null);       setInRange(false)
+      setHoveredDoor(null);     setHoveredExamine(null)
+    }
+  }
+
+  function handleExamine(examineId) {
+    setSelectedEvidenceId(examineId)
+  }
+
+  function handleDoorClick(doorTo) {
+    const entry = ROOM_ENTRY[`${doorTo}_from_${currentRoom}`]
+    setCurrentRoom(doorTo)
+    setHoveredDoor(null)
+    setHoveredId(null)
+    setInRange(false)
+    if (entry) {
+      playerRef.current?.teleport(entry.pos[0], entry.pos[1], entry.pos[2], entry.yaw)
+    } else {
+      playerRef.current?.reset()
+    }
   }
 
   // 클릭 → 미니게임 열기 (채증 직접 X)
@@ -204,7 +167,8 @@ export default function SceneWrapper() {
         background: 'rgba(0,0,0,0.5)', padding: '6px 12px', borderRadius: 6,
         pointerEvents: 'none',
       }}>
-        채증: {collectedCount} / {evidences.length}
+        방 {currentRoom}
+        {currentRoom === 1 && <span style={{ marginLeft: 10 }}>채증: {collectedCount} / {evidences.length}</span>}
         {debugMode && <span style={{ marginLeft: 12, color: '#00ffcc' }}>DEV</span>}
         {lightIsolation && <span style={{ marginLeft: 8, color: '#ffffff' }}>LIGHT</span>}
       </div>
@@ -217,7 +181,7 @@ export default function SceneWrapper() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
           zIndex: 10, pointerEvents: 'none',
         }}>
-          <span style={{ color: hoveredId && inRange ? '#ffee00' : 'white', fontSize: 20, lineHeight: 1 }}>+</span>
+          <span style={{ color: (hoveredId && inRange) || hoveredDoor?.inRange || hoveredExamine?.inRange ? '#ffee00' : 'white', fontSize: 20, lineHeight: 1 }}>+</span>
           {hoveredId && (
             <span style={{
               fontSize: 12, fontFamily: 'sans-serif',
@@ -225,6 +189,24 @@ export default function SceneWrapper() {
               background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 4,
             }}>
               {inRange ? '[클릭] 채증' : '너무 멀어요'}
+            </span>
+          )}
+          {hoveredDoor && (
+            <span style={{
+              fontSize: 12, fontFamily: 'sans-serif',
+              color: hoveredDoor.inRange ? '#ffee00' : '#aaaaaa',
+              background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 4,
+            }}>
+              {hoveredDoor.inRange ? `[클릭] → 방 ${hoveredDoor.doorTo}` : '너무 멀어요'}
+            </span>
+          )}
+          {hoveredExamine && (
+            <span style={{
+              fontSize: 12, fontFamily: 'sans-serif',
+              color: hoveredExamine.inRange ? '#ffee00' : '#aaaaaa',
+              background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 4,
+            }}>
+              {hoveredExamine.inRange ? '[클릭] 검사대에 올리기' : '너무 멀어요'}
             </span>
           )}
         </div>
@@ -266,31 +248,22 @@ export default function SceneWrapper() {
                 </span>
               </div>
 
+              <div style={{ color: '#555', fontSize: 10, margin: '8px 0 4px' }}>─── 씬 시나리오 ───</div>
+              {(() => {
+                const sid = scenariosByRoom.current[currentRoom] ?? null
+                return (
+                  <div style={{ color: sid ? '#aaffaa' : '#555', marginBottom: 4 }}>
+                    {sid
+                      ? `● 방 ${currentRoom}: ${SCENE_SCENARIOS.find(s => s.id === sid)?.label ?? sid}`
+                      : `○ 방 ${currentRoom}: 기본 조명 (어드민에서 변경)`}
+                  </div>
+                )
+              })()}
+
               <div style={{ color: '#555', fontSize: 10, margin: '8px 0 4px' }}>─── 시점 조작 ───</div>
               <div><Kbd>좌클릭</Kbd> 드래그 — 회전</div>
               <div><Kbd>우클릭</Kbd> 드래그 — 이동 (pan)</div>
               <div><Kbd>휠</Kbd> 줌</div>
-
-              <div style={{ color: '#555', fontSize: 10, margin: '8px 0 6px' }}>─── 생성층 씬 시나리오 ───</div>
-              {SCENE_SCENARIOS.map((s) => {
-                const active = activeScenario === s.id
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => setActiveScenario(active ? null : s.id)}
-                    style={{
-                      display: 'block', width: '100%', padding: '4px 8px', marginBottom: 4,
-                      background: active ? '#1a3a1a' : '#111',
-                      border: `1px solid ${active ? '#3a7a3a' : '#333'}`,
-                      borderRadius: 4, color: active ? '#66ff66' : '#888',
-                      fontFamily: 'monospace', fontSize: 11, cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
-                  >
-                    {active ? '● ' : '○ '}{s.label}
-                  </button>
-                )
-              })}
 
               <div style={{ color: '#555', fontSize: 10, margin: '8px 0 4px' }}>─── 오브젝트 범례 ───</div>
               <div><Dot color="#ffee44" /> 노란 와이어프레임 — Rapier 콜라이더</div>
@@ -332,7 +305,8 @@ export default function SceneWrapper() {
 
       <Canvas camera={{ fov: 75 }}>
         {(() => {
-          const lighting = SCENE_SCENARIOS.find(s => s.id === activeScenario)?.lighting ?? DEFAULT_LIGHTING
+          const sid = scenariosByRoom.current[currentRoom] ?? null
+          const lighting = SCENE_SCENARIOS.find(s => s.id === sid)?.lighting ?? DEFAULT_LIGHTING
           const pts = lighting.points
           return (<>
             <ambientLight intensity={lightIsolation ? 0.02 : lighting.ambient} />
@@ -348,23 +322,43 @@ export default function SceneWrapper() {
           />
         )}
         <Physics gravity={[0, 0, 0]} debug={debugMode}>
-          {(() => {
-            const scenario = SCENE_SCENARIOS.find(s => s.id === activeScenario)
-            return <Room
-              debug={debugMode}
-              isolated={lightIsolation}
-              sceneOverride={scenario?.override ?? null}
-              lightColor={scenario?.lighting.roomLight?.color ?? '#ffe4a0'}
-              lightIntensity={scenario?.lighting.roomLight?.intensity ?? 12}
-            />
+          {currentRoom === 1 && (() => {
+            const sid = scenariosByRoom.current[1] ?? null
+            const scenario = SCENE_SCENARIOS.find(s => s.id === sid)
+            return <>
+              <Room
+                debug={debugMode}
+                isolated={lightIsolation}
+                sceneOverride={scenario?.override ?? null}
+                lightColor={scenario?.lighting.roomLight?.color ?? '#ffe4a0'}
+                lightIntensity={scenario?.lighting.roomLight?.intensity ?? 12}
+              />
+              <DoorPortal position={[0, 1.0, -3.5]} doorTo={2} />
+            </>
           })()}
-          <CrimeScene evidences={evidences} hoveredId={hoveredId} inRange={inRange} />
+          {currentRoom === 2 && <>
+            <RoomPlaceholder wallColor="#3a5c5c" floorColor="#2a3a3a" ceilingColor="#4a6c6c" />
+            <Room2Objects
+              collectedEvidences={evidences.filter(ev => ev.collected)}
+              selectedEvidenceId={selectedEvidenceId}
+            />
+            <DoorPortal position={[0, 1.0, -4.3]} doorTo={1} />
+            <DoorPortal position={[0, 1.0,  4.3]} doorTo={3} />
+          </>}
+          {currentRoom === 3 && <>
+            <RoomPlaceholder wallColor="#5c4a3a" floorColor="#3a2e22" ceilingColor="#6c5a4a" />
+            <Room3Objects />
+            <DoorPortal position={[0, 1.0, 4.3]} doorTo={2} />
+          </>}
+          <CrimeScene evidences={currentRoom === 1 ? evidences : []} hoveredId={hoveredId} inRange={inRange} />
           <PlayerController
             ref={playerRef}
             paused={!!activeMiniGame || debugMode}
             onLockChange={handleLockChange}
             onHover={handleHover}
             onInteract={handleInteract}
+            onDoorClick={handleDoorClick}
+            onExamine={handleExamine}
           />
         </Physics>
       </Canvas>

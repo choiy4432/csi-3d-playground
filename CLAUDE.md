@@ -36,20 +36,35 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 코드 검토·테스트·타입·프롬프트·DB 마이그레이션 검토는 각 에이전트가 담당한다.
 `.claude/agents/` 참고.
 
-> **TODO 규칙**: `docs/TODO.md` 항목 추가·완료·보류 처리 시 Claude가 복잡도를 판단한다.
+> **ERD 규칙**: `src/data/fixedLayer.json` 스키마 변경(테이블 추가·필드 추가·삭제·이름 변경) 시 `docs/erd-impl-status.md`를 반드시 함께 업데이트한다.
+
+> **TODO 규칙**: `docs/TODO.md` 관련 작업은 **무조건 `todo-manager` 에이전트를 Agent 도구로 호출**한다.
 >
-> - **단순** (완료 체크, 단일 항목 추가): Claude가 `todo-manager` 규칙에 따라 직접 처리한다.
-> - **복잡** (드롭다운 분류, 보류 판단, 구조 재편): `todo-manager` 에이전트(Opus + extended thinking)를 Agent 도구로 호출한다.
+> - 모델은 `todo-manager` 에이전트가 작업 복잡도에 따라 자율적으로 판단한다.
+> - `<details>` 드롭다운 그룹 내부 항목을 작업하기 시작하면, 해당 그룹을 `## 🔄 진행 중` 섹션으로 이동한다.
+> - 그룹 내 모든 항목 완료 시 `## ✅ 완료` 섹션으로 이동한다.
+
+### 오케스트레이션 흐름
+
+`/csi-dev` 커맨드가 구현 완료 후 리뷰 → QA 순서로 에이전트를 트리거한다.
+
+```
+구현 완료
+  → 1단계: 리뷰 에이전트 (수정 파일 기준)
+  → 2단계: qa 에이전트 (리뷰 완료 직후)
+```
 
 ### 호출 규칙
 
-| 에이전트                | 호출 조건                                 |
-| ----------------------- | ----------------------------------------- |
-| `code-reviewer`         | 아래 **핵심 파일** 수정 후 반드시 실행    |
-| `type-checker`          | API 응답 구조 또는 컴포넌트 props 변경 시 |
-| `db-migration-reviewer` | `backend/migrations/` 파일 생성·수정 시   |
-| `prompt-reviewer`       | LLM 프롬프트 문자열 작성·수정 시          |
-| `test-writer`           | 사용자가 "테스트 짜줘" 라고 요청할 때만   |
+| 에이전트                | 호출 조건                                                                   |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `code-reviewer`         | 아래 **핵심 파일** 수정 후 반드시 실행                                      |
+| `interaction-reviewer`  | `src/components/interaction/` 파일 수정 시 (`code-reviewer` 보다 먼저 실행) |
+| `type-checker`          | API 응답 구조 또는 컴포넌트 props 변경 시                                   |
+| `db-migration-reviewer` | `backend/migrations/` 파일 생성·수정 시                                     |
+| `prompt-reviewer`       | LLM 프롬프트 문자열 작성·수정 시                                            |
+| `test-writer`           | 사용자가 "테스트 짜줘" 라고 요청할 때만                                     |
+| `qa`                    | 위 리뷰 에이전트 완료 직후 / "QA 해줘" 직접 요청                           |
 
 **code-reviewer 핵심 파일 (이 파일을 수정하면 무조건 실행):**
 
@@ -266,14 +281,24 @@ git push origin feat/xxx       # PR 생성 → dev로 머지
 git checkout main
 git merge dev
 git push origin main           # Vercel 자동 배포 트리거
-git tag v1.x.0 -m "배포 내용 요약"
-git push origin v1.x.0
+git tag vX.Y.Z -m "배포 내용 요약"
+git push origin vX.Y.Z
 ```
+
+### 버전 규칙 (Semantic Versioning)
+
+`vMAJOR.MINOR.PATCH` 형식을 따른다.
+
+| 구분 | 올리는 조건 |
+|------|-----------|
+| MAJOR | 이전 버전과 호환되지 않는 변경 |
+| MINOR | 이전 버전과 호환되는 기능 추가 |
+| PATCH | 이전 버전의 버그 수정 |
 
 ### 규칙
 
 - `main` 직접 push 금지
-- 배포할 때마다 태그 남기기 (`v0.1`, `v1.0` 등) — 특정 버전 복원 기준점
+- 배포할 때마다 semver 태그 남기기 — 특정 버전 복원 기준점
 - 작업 시작 전 항상 현재 브랜치 확인: `git branch`
 - 현재 작업 브랜치: **`dev`** (기본 개발 브랜치)
 
@@ -290,3 +315,5 @@ refactor(scene): EvidenceObject clone 처리 분리
 
 prefix: `feat` / `fix` / `test` / `refactor` / `chore`
 scope: 슬롯키(S1~S5) · 인터랙션ID(COL-01 등) · 레이어(scene/validator/pipeline)
+
+`Co-Authored-By` 트레일러는 커밋 메시지에 포함하지 않는다.

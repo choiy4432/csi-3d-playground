@@ -4,7 +4,7 @@ const STORAGE_KEY = 'csi_fixedLayer'
 const PLACEMENTS_KEY = 'csi_placements'
 
 // Room01.glb 플로어 기준 — 벽과 충분한 여백 확보
-const ROOM_BOUNDS = { x: [-2.5, 2.5], z: [-3.5, 1.5] }
+export const ROOM_BOUNDS = { x: [-2.5, 2.5], z: [-3.5, 1.5] }
 
 const POSITION_PRESETS = [
   [ 2.0, 0,  1.0],
@@ -69,4 +69,16 @@ export function loadPlacements(gradeBand, data) {
     if (stored) return JSON.parse(stored)
   } catch {}
   return generateEvidencePlacements(gradeBand, data)
+}
+
+// PLAY_RESULT 런타임 레코드 초기 형태 (FastAPI 전송용)
+export function createPlayResult(sessionId = null) {
+  return {
+    id: null,
+    session_id: sessionId,
+    accused_npc_id: null,
+    chosen_inference: '',
+    score: 0,
+    is_correct: false,
+  }
 }

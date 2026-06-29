@@ -9,9 +9,10 @@ const CAPSULE_R     = 0.3
 const BODY_Y        = CAPSULE_HALF + CAPSULE_R
 const EYE_Y         = BODY_Y + 0.8
 const INTERACT_DIST = 2.5
+const EXAMINE_DIST  = 3.5
 
 const PlayerController = forwardRef(function PlayerController(
-  { paused, onLockChange, onHover, onInteract },
+  { paused, onLockChange, onHover, onInteract, onDoorClick, onExamine },
   ref
 ) {
   const { camera, gl } = useThree()
@@ -34,7 +35,14 @@ const PlayerController = forwardRef(function PlayerController(
       bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
       yaw.current   = 0
       pitch.current = 0
-    }
+    },
+    teleport(x, y, z, facingYaw = 0) {
+      if (!bodyRef.current) return
+      bodyRef.current.setTranslation({ x, y, z }, true)
+      bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
+      yaw.current   = facingYaw
+      pitch.current = 0
+    },
   }))
 
   useEffect(() => {
@@ -60,7 +68,9 @@ const PlayerController = forwardRef(function PlayerController(
         if (!pausedRef.current) gl.domElement.requestPointerLock()  // 디버그/미니게임 중 포인터락 차단
       } else if (!pausedRef.current) {
         const h = currentHover.current
-        if (h?.inRange) onInteract?.(h.id)
+        if (h?.type === 'evidence' && h?.inRange) onInteract?.(h.id)
+        else if (h?.type === 'door'    && h?.inRange) onDoorClick?.(h.doorTo)
+        else if (h?.type === 'examine' && h?.inRange) onExamine?.(h.examineId)
       }
     }
 
@@ -77,7 +87,7 @@ const PlayerController = forwardRef(function PlayerController(
       window.removeEventListener('keyup',   onKeyUp)
       document.removeEventListener('mousemove', onMouseMove)
     }
-  }, [camera, gl, onLockChange, onInteract])
+  }, [camera, gl, onLockChange, onInteract, onDoorClick, onExamine])
 
   useFrame(({ raycaster, scene }) => {
     if (!bodyRef.current) return
@@ -92,14 +102,32 @@ const PlayerController = forwardRef(function PlayerController(
 
     raycaster.setFromCamera({ x: 0, y: 0 }, camera)
     const hits = raycaster.intersectObjects(scene.children, true)
-    const hit  = hits.find((h) => h.object.userData.evidenceId !== undefined)
-    const newInfo = hit
-      ? { id: hit.object.userData.evidenceId, inRange: hit.distance <= INTERACT_DIST }
-      : null
+    const hit = hits.find((h) =>
+      h.object.userData.evidenceId !== undefined ||
+      h.object.userData.doorTo     !== undefined ||
+      h.object.userData.examineId  !== undefined
+    )
+
+    let newInfo = null
+    if (hit) {
+      const ud = hit.object.userData
+      if (ud.evidenceId !== undefined) {
+        newInfo = { type: 'evidence', id: ud.evidenceId,   inRange: hit.distance <= INTERACT_DIST }
+      } else if (ud.doorTo !== undefined) {
+        newInfo = { type: 'door',     doorTo: ud.doorTo,   inRange: hit.distance <= INTERACT_DIST }
+      } else {
+        newInfo = { type: 'examine',  examineId: ud.examineId, inRange: hit.distance <= EXAMINE_DIST }
+      }
+    }
 
     currentHover.current = newInfo
 
-    const newKey = newInfo ? `${newInfo.id}-${newInfo.inRange}` : null
+    let newKey = null
+    if (newInfo) {
+      if      (newInfo.type === 'evidence') newKey = `ev-${newInfo.id}-${newInfo.inRange}`
+      else if (newInfo.type === 'door')     newKey = `door-${newInfo.doorTo}-${newInfo.inRange}`
+      else                                  newKey = `exam-${newInfo.examineId}-${newInfo.inRange}`
+    }
     if (newKey !== prevHovered.current) {
       prevHovered.current = newKey
       onHover?.(newInfo)

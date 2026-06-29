@@ -4,9 +4,9 @@ import { Card, SaveBar, S, btn, badge } from '../shared.jsx'
 const SLOT_KIND_OPTIONS = [
   { value: 'scene_narrative',    label: '사건 배경 설명' },
   { value: 'suspect_alibi',      label: '용의자 알리바이' },
-  { value: 'npc_detail',         label: '등장인물 상세' },
+  { value: 'space_placement',    label: '공간 배치' },
   { value: 'evidence_placement', label: '증거물 배치' },
-  { value: 'inference_prompt',   label: '추론 질문' },
+  { value: 'npc_dialogue',       label: 'NPC 대사' },
 ]
 const SLOT_KIND_LABEL = Object.fromEntries(SLOT_KIND_OPTIONS.map(o => [o.value, o.label]))
 
@@ -18,8 +18,8 @@ const AXIS_OPTIONS = [
 const AXIS_LABEL = Object.fromEntries(AXIS_OPTIONS.map(o => [o.value, o.label]))
 
 const SLOT_KEY_LABEL = {
-  S1: '등장인물 설명', S2: '증거물 배치', S3: '사건 배경',
-  S4: '알리바이', S5: '추론 질문',
+  S1: '공간 배치', S2: '증거물 배치', S3: '사건 배경',
+  S4: '알리바이', S5: 'NPC 대사',
 }
 
 function SlotRow({ slot, onChange }) {
