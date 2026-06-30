@@ -4,7 +4,7 @@ import { OrbitControls, Environment, useGLTF, Line, Sky } from '@react-three/dre
 import { Physics } from '@react-three/rapier'
 import * as THREE from 'three'
 import RoomAssembled from './RoomAssembled'
-import PlayerController from './PlayerController'
+import PlayerController from '../PlayerController'
 
 // ── 기본값 ───────────────────────────────────────────────────
 const DEFAULTS = {
@@ -15,7 +15,7 @@ const DEFAULTS = {
   rectarea:    { intensity: 18,   width: 3.0, height: 2.0, color: '#cceeff' },
   hemi:        { intensity: 2.5,  skyColor: '#3366ff', groundColor: '#663300' },
   env:         { intensity: 2.0,  preset: 'apartment' },
-  sky:         { sunX: 100, sunY: 20, sunZ: 100, turbidity: 10, rayleigh: 2, sunIntensity: 1.5 },
+  sky:         { sunX: 40, sunY: 100, sunZ: 40, turbidity: 10, rayleigh: 2, sunIntensity: 1.5 },
 }
 
 // ── 파라미터 정의 ─────────────────────────────────────────────
@@ -158,13 +158,13 @@ function LightDirectional({ intensity = 3.5, posX = 3, posY = 5, posZ = -2, colo
   useEffect(() => {
     if (!ref.current) return
     const s = ref.current.shadow
-    s.camera.left = -12; s.camera.right = 12
-    s.camera.top  =  12; s.camera.bottom = -12
-    s.camera.near = 0.1; s.camera.far = 50
+    s.camera.left = -6; s.camera.right = 6
+    s.camera.top  =  6; s.camera.bottom = -6
+    s.camera.near = 0.1; s.camera.far = 30
     s.camera.updateProjectionMatrix()
     s.mapSize.set(2048, 2048)
-    s.bias       = -0.001
-    s.normalBias =  0.04
+    s.bias       = 0
+    s.normalBias = 0.002
     if (targetRef.current) ref.current.target = targetRef.current
   }, [])
   return (
@@ -212,12 +212,12 @@ function LightSky({ sunX = 100, sunY = 20, sunZ = 100, turbidity = 10, rayleigh 
     if (!ref.current) return
     const s = ref.current.shadow
     s.mapSize.set(2048, 2048)
-    s.camera.left = -15; s.camera.right = 15
-    s.camera.top  =  15; s.camera.bottom = -15
-    s.camera.near = 0.1; s.camera.far = 100
+    s.camera.left = -6; s.camera.right = 6
+    s.camera.top  =  6; s.camera.bottom = -6
+    s.camera.near = 0.1; s.camera.far = 200
     s.camera.updateProjectionMatrix()
-    s.bias = -0.001
-    s.normalBias = 0.04
+    s.bias = 0
+    s.normalBias = 0.002
   }, [])
   return (
     <>

@@ -70,12 +70,12 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 
 - `src/SceneWrapper.jsx`
 - `src/PlayerController.jsx`
-- `src/EvidenceObject.jsx`
 - `src/MiniGame.jsx`
+- `src/scene/EvidenceObject.jsx`
 - `backend/services/` 하위 파일
 - `backend/routers/` 하위 파일
 
-그 외 파일(Hand.jsx, Room.jsx, UI 컴포넌트 등)은 code-reviewer 생략 가능.
+그 외 파일(scene/ 하위, UI 컴포넌트 등)은 code-reviewer 생략 가능.
 
 ---
 
@@ -129,13 +129,22 @@ PLAY_SESSION 생성 (anon_token)
 ```
 src/
 ├── SceneWrapper.jsx     # Canvas + Physics 래퍼, evidences 상태 관리, HUD, dev 모드
-├── CrimeScene.jsx       # evidences.map() → EvidenceObject 배치
-├── EvidenceObject.jsx   # GLB 로드, Rapier 고정 콜라이더, hover/채증 비주얼
-├── Room.jsx             # Room01.glb trimesh 콜라이더, 조명 기구 자동 감지
 ├── PlayerController.jsx # WASD 이동, Pointer Lock, 클릭 채증 처리, forwardRef reset()
 ├── MiniGame.jsx         # 타이밍바 / 연타 미니게임 (window 이벤트, Pointer Lock 유지)
-├── Hand.jsx             # SVG 라텍스 장갑, grab 애니메이션
-├── DebugLight.jsx       # pointLight + debug 구체 래퍼 (재사용)
+├── scene/               # 보조 씬 구성 파일
+│   ├── CrimeScene.jsx       # evidences.map() → EvidenceObject 배치
+│   ├── EvidenceObject.jsx   # GLB 로드, Rapier 고정 콜라이더, hover/채증 비주얼
+│   ├── Room.jsx             # Room01.glb trimesh 콜라이더, 조명 기구 자동 감지
+│   ├── Hand.jsx             # SVG 라텍스 장갑, grab 애니메이션
+│   ├── DebugLight.jsx       # pointLight + debug 구체 래퍼 (재사용)
+│   ├── DoorPortal.jsx
+│   ├── EvidenceDisplay.jsx
+│   ├── EvidenceExaminer.jsx
+│   ├── RoomAssembled.jsx
+│   ├── RoomObjects.jsx
+│   ├── RoomPlaceholder.jsx
+│   └── TestRoomScene.jsx
+├── admin/               # 어드민 에디터
 ├── components/
 │   ├── interaction/     # 17개 모듈 (COL-01~10, ANL-01~04, INF-01~03)
 │   └── ui/             # 2D UI (HUD, 브리핑, 리포트)
@@ -144,7 +153,9 @@ src/
 │   └── setup.js
 ├── hooks/
 ├── types/               # 타입 정의 — type-checker 에이전트 참고
-└── constants/           # grade_band, 슬롯 순서 등
+├── constants/           # grade_band, 슬롯 순서 등
+├── services/            # mockGenerator, auth (추가 예정)
+└── data/                # fixedLayer.json
 
 public/
 └── models/

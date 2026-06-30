@@ -3,6 +3,16 @@ import { useGLTF } from '@react-three/drei'
 import { RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 
+// Window_Wall01 X 범위 ±2.755 (Z≈±4.221), Window_Wall02 Z 범위 ±3.736 (X≈±3.253)
+// 코너마다 약 0.5×0.5 unit 틈이 생겨 빛이 새므로 코너 기둥으로 막음
+const CORNER_X = 3.252
+const CORNER_Z = 4.221
+const CORNER_MID_Z = (4.221 + 3.736) / 2   // 3.979  — 창문-창문 코너 기둥 중심 Z
+const CORNER_MID_X = (3.253 + 2.755) / 2   // 3.004  — 창문-창문 코너 기둥 중심 X
+const WALL_H   = 3.004                       // 벽 전체 높이
+const WALL_Y   = 1.502                       // 벽 Y 중심
+const cornerMat = new THREE.MeshStandardMaterial({ color: '#2d2420', roughness: 0.8 })
+
 const glassMat = new THREE.MeshPhysicalMaterial({
   color: new THREE.Color('#ffffff'),
   roughness: 0.0,
@@ -101,6 +111,18 @@ export default function RoomAssembled({ walls = {} }) {
         ? <WallPanel url="/models/Room_Test/Wall02.glb" />
         : <WallPanel url="/models/Room_Test/Window_Wall02.glb" flip applyGlass />
       }
+
+      {/* 코너 기둥 — 벽 패널 이음새 빛 누수 방지 (4 코너 고정) */}
+      {[
+        [ CORNER_MID_X,  WALL_Y, -CORNER_MID_Z],  // 앞-우
+        [-CORNER_MID_X,  WALL_Y, -CORNER_MID_Z],  // 앞-좌
+        [ CORNER_MID_X,  WALL_Y,  CORNER_MID_Z],  // 뒤-우
+        [-CORNER_MID_X,  WALL_Y,  CORNER_MID_Z],  // 뒤-좌
+      ].map(([x, y, z], i) => (
+        <mesh key={i} position={[x, y, z]} castShadow receiveShadow material={cornerMat}>
+          <boxGeometry args={[0.6, WALL_H, 0.6]} />
+        </mesh>
+      ))}
     </>
   )
 }
