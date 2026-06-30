@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Environment, useGLTF, Line, Sky } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import * as THREE from 'three'
@@ -10,7 +10,7 @@ import PlayerController from '../PlayerController'
 const DEFAULTS = {
   ambient:     { intensity: 0.4,  color: '#ffffff' },
   point:       { intensity: 15,   distance: 8,   decay: 2.0, color: '#ffffff' },
-  spot:        { intensity: 35,   angle: 0.38,   penumbra: 0.3, distance: 8.0, decay: 1.5, color: '#fff8ee', posX: 0, posY: 3.2, posZ: 0, targetX: 0, targetY: 0, targetZ: 0 },
+  spot:        { intensity: 35,   angle: 0.38,   penumbra: 0.3, distance: 8.0, decay: 1.5, color: '#fff8ee', posX: 0, posY: 3.2, posZ: 0 },
   directional: { intensity: 3.5,  posX: 3, posY: 5, posZ: -2, color: '#fff8e0', targetX: 0, targetY: 0, targetZ: 0 },
   rectarea:    { intensity: 18,   width: 3.0, height: 2.0, color: '#cceeff' },
   hemi:        { intensity: 2.5,  skyColor: '#3366ff', groundColor: '#663300' },
@@ -40,9 +40,6 @@ const PARAM_DEFS = {
     { key: 'posX',      label: 'pos.X',     type: 'range', min: -4, max: 4,  step: 0.1 },
     { key: 'posY',      label: 'pos.Y',     type: 'range', min: 0,  max: 5,  step: 0.1 },
     { key: 'posZ',      label: 'pos.Z',     type: 'range', min: -4, max: 4,  step: 0.1 },
-    { key: 'targetX',   label: 'tgt.X',     type: 'range', min: -4, max: 4,  step: 0.1 },
-    { key: 'targetY',   label: 'tgt.Y',     type: 'range', min: -1, max: 4,  step: 0.1 },
-    { key: 'targetZ',   label: 'tgt.Z',     type: 'range', min: -4, max: 4,  step: 0.1 },
   ],
   directional: [
     { key: 'intensity', label: 'intensity', type: 'range', min: 0, max: 20,  step: 0.25 },
@@ -102,52 +99,101 @@ function LightPoint({ intensity = 15, distance = 8, decay = 2.0, color = '#fffff
   )
 }
 
-function TrackLightModel({ position }) {
-  const { scene } = useGLTF('/models/light/Track_Light.glb')
-  const meshes = useMemo(() => {
-    const targets = new Set(['Cube033', 'Cube033_1'])
-    const found = []
-    scene.traverse((obj) => {
-      if (obj.isMesh && targets.has(obj.name)) {
-        const clone = obj.clone()
-        clone.position.set(0, 0, 0)
-        clone.rotation.set(0, 0, 0)
-        clone.scale.set(1, 1, 1)
-        found.push(clone)
-      }
-    })
-    return found
-  }, [scene])
-  if (!meshes.length) return null
-  return (
-    <group position={position} rotation={[0, Math.PI / 2, 0]} scale={0.9}>
-      {meshes.map((m) => <primitive key={m.name} object={m} />)}
-    </group>
-  )
+// ── 트랙 라이트 모델 배치 상수 ────────────────────────────────
+const TRACK_LIGHT_ROT   = [0, Math.PI / 2, 0]
+const TRACK_LIGHT_SCALE = 0.9
+const AIM_DIST  = 3      // spotLight target / 가이드 라인 길이
+const AIM_SPEED = 1.3    // 조이스틱 회전 속도 (rad/s)
+// pitch 한계: 기본 발광이 -45°라 pitch ≈ +0.78에서 빔이 수직(정바닥)이 되며
+// 그 지점에서 lookAt 축이 뒤집힌다. 직전까지만 허용한다.
+const PITCH_MIN = -0.85  // 위로(수평 부근)
+const PITCH_MAX = 0.72   // 아래로(수직 직하 직전)
+
+// 헤드 피벗 로컬 프레임 기준 값 (조인트=피벗 원점, 회전·스케일 미적용 프레임).
+// GLB 로컬값에 스케일→베이스 회전(π/2)을 미리 적용해 둔다.
+const _baseEuler = new THREE.Euler(...TRACK_LIGHT_ROT)
+// 전구(헤드 렌즈) 위치
+const BULB_AIM = new THREE.Vector3(-0.074, -0.091, 0)
+  .multiplyScalar(TRACK_LIGHT_SCALE).applyEuler(_baseEuler)
+// 빛 방출 방향 = 본체 중심→렌즈 중심 (down-forward)
+const EMIT_AIM = new THREE.Vector3(-0.701, -0.713, 0)
+  .applyEuler(_baseEuler).normalize()
+
+// 조준 모드 카메라: 전구 위치로 이동해 헤드가 가리키는 방향을 바라본다
+const _camBulb = new THREE.Vector3()
+const _camTgt  = new THREE.Vector3()
+const _camDir  = new THREE.Vector3()
+function AimCamera({ active, bulbRef, targetRef }) {
+  useFrame(({ camera }) => {
+    if (!active || !bulbRef.current || !targetRef.current) return
+    bulbRef.current.getWorldPosition(_camBulb)
+    targetRef.current.getWorldPosition(_camTgt)
+    _camDir.subVectors(_camTgt, _camBulb).normalize()
+    camera.position.copy(_camBulb).addScaledVector(_camDir, 0.35) // 전구 앞으로 빼서 시야 확보
+    camera.lookAt(_camTgt)
+  })
+  return null
 }
 
-function LightSpot({ intensity = 35, angle = 0.38, penumbra = 0.3, distance = 8, decay = 1.5, color = '#fff8ee', posX = 0, posY = 3.2, posZ = 0, targetX = 0, targetY = 0, targetZ = 0 }) {
-  const lightRef  = useRef()
-  const targetRef = useRef()
+function TrackSpotLight({ params, headRotRef, aimVelRef, aimMode, bulbRef, targetRef }) {
+  const { intensity = 35, angle = 0.38, penumbra = 0.3, distance = 8, decay = 1.5, color = '#fff8ee', posX = 0, posY = 3.2, posZ = 0 } = params
+  const { scene } = useGLTF('/models/light/Track_Light_turnable.glb')
+  const { head, bar } = useMemo(() => {
+    const c = scene.clone(true)
+    return {
+      head: c.getObjectByName('Track_Light_Head'),
+      bar:  c.getObjectByName('Track_Light_Bar'),
+    }
+  }, [scene])
+
+  const lightRef = useRef()
+  const pivotRef = useRef()
+
   useEffect(() => {
+    if (pivotRef.current) pivotRef.current.rotation.order = 'YXZ'
     if (lightRef.current && targetRef.current) lightRef.current.target = targetRef.current
-  }, [])
+  }, [targetRef])
+
+  // 헤드 회전(=빛 방향)을 매 프레임 적용. 조준 모드면 조이스틱 속도를 적분한다.
+  useFrame((_, dt) => {
+    const h = headRotRef.current
+    if (aimMode) {
+      const v = aimVelRef.current
+      h.yaw  -= v.x * AIM_SPEED * dt
+      h.pitch = THREE.MathUtils.clamp(h.pitch - v.y * AIM_SPEED * dt, PITCH_MIN, PITCH_MAX)
+    }
+    if (pivotRef.current) pivotRef.current.rotation.set(h.pitch, h.yaw, 0)
+  })
+
+  const tgt = [
+    BULB_AIM.x + EMIT_AIM.x * AIM_DIST,
+    BULB_AIM.y + EMIT_AIM.y * AIM_DIST,
+    BULB_AIM.z + EMIT_AIM.z * AIM_DIST,
+  ]
+
   return (
     <>
-      <spotLight ref={lightRef} position={[posX, posY, posZ]} intensity={intensity} angle={angle} penumbra={penumbra} color={color} distance={distance} decay={decay} castShadow shadow-mapSize={[1024, 1024]} />
-      <object3D ref={targetRef} position={[targetX, targetY, targetZ]} />
-      <mesh position={[posX, posY, posZ]}>
-        <sphereGeometry args={[0.07, 8, 8]} />
-        <meshBasicMaterial color="#ffaa44" />
-      </mesh>
-      <Line points={[[posX, posY, posZ], [targetX, targetY, targetZ]]} color="#ffaa44" lineWidth={1.5} />
-      <mesh position={[targetX, targetY, targetZ]}>
-        <sphereGeometry args={[0.05, 8, 8]} />
-        <meshBasicMaterial color="#ffaa44" opacity={0.5} transparent />
-      </mesh>
-      <Suspense fallback={null}>
-        <TrackLightModel position={[posX, posY - 0.2, posZ]} />
-      </Suspense>
+      {/* 바: 천장에 고정 (회전 안 함) */}
+      <group position={[posX, posY, posZ]} rotation={TRACK_LIGHT_ROT} scale={TRACK_LIGHT_SCALE}>
+        {bar && <primitive object={bar} />}
+      </group>
+
+      {/* 헤드 피벗: 조인트(원점)에서 yaw/pitch 회전 → 빛·전구·카메라가 함께 움직인다 */}
+      <group position={[posX, posY, posZ]} ref={pivotRef}>
+        <group rotation={TRACK_LIGHT_ROT} scale={TRACK_LIGHT_SCALE}>
+          {head && <primitive object={head} />}
+        </group>
+        <spotLight
+          ref={lightRef}
+          position={BULB_AIM.toArray()}
+          intensity={intensity} angle={angle} penumbra={penumbra}
+          color={color} distance={distance} decay={decay}
+          castShadow shadow-mapSize={[1024, 1024]}
+        />
+        <object3D ref={bulbRef}   position={BULB_AIM.toArray()} />
+        <object3D ref={targetRef} position={tgt} />
+        <Line points={[BULB_AIM.toArray(), tgt]} color="#ffaa44" lineWidth={1.5} />
+      </group>
     </>
   )
 }
@@ -259,7 +305,7 @@ function SceneObjects() {
 const LIGHTS = [
   { id: 'ambient',     label: 'ambient',     accent: '#aaffcc', Component: LightAmbient },
   { id: 'point',       label: 'point',       accent: '#ffdd66', Component: LightPoint },
-  { id: 'spot',        label: 'spot',        accent: '#ffaa44', Component: LightSpot },
+  { id: 'spot',        label: 'spot',        accent: '#ffaa44', Component: null },
   { id: 'directional', label: 'directional', accent: '#ffe066', Component: LightDirectional },
   { id: 'rectarea',    label: 'rectArea',    accent: '#66ddff', Component: LightRectArea },
   { id: 'hemi',        label: 'hemi',        accent: '#8888ff', Component: LightHemi },
@@ -326,6 +372,50 @@ const S = {
   }),
 }
 
+// ── 조준 조이스틱 (DOM 오버레이) ───────────────────────────────
+// velRef.current = { x: -1..1, y: -1..1 } (y는 위가 +). 놓으면 0으로 복귀.
+function Joystick({ velRef }) {
+  const baseRef = useRef()
+  const dragging = useRef(false)
+  const [knob, setKnob] = useState({ x: 0, y: 0 })
+  const R = 52
+
+  function apply(e) {
+    const rect = baseRef.current.getBoundingClientRect()
+    const cx = rect.left + rect.width / 2
+    const cy = rect.top + rect.height / 2
+    let dx = e.clientX - cx
+    let dy = e.clientY - cy
+    const d = Math.hypot(dx, dy)
+    if (d > R) { dx = (dx / d) * R; dy = (dy / d) * R }
+    setKnob({ x: dx, y: dy })
+    velRef.current = { x: dx / R, y: -dy / R }
+  }
+  function start(e) { dragging.current = true; e.target.setPointerCapture(e.pointerId); apply(e) }
+  function move(e)  { if (dragging.current) apply(e) }
+  function end()    { dragging.current = false; setKnob({ x: 0, y: 0 }); velRef.current = { x: 0, y: 0 } }
+
+  return (
+    <div
+      ref={baseRef}
+      onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}
+      style={{
+        position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+        width: R * 2, height: R * 2, borderRadius: '50%', zIndex: 20, touchAction: 'none',
+        background: 'rgba(10,12,20,0.55)', border: '1px solid #ffaa4466', cursor: 'grab',
+      }}
+    >
+      <div style={{
+        position: 'absolute', left: '50%', top: '50%',
+        width: 42, height: 42, borderRadius: '50%', pointerEvents: 'none',
+        transform: `translate(-50%,-50%) translate(${knob.x}px, ${knob.y}px)`,
+        background: 'radial-gradient(circle at 35% 30%, #ffd9a0, #ff9a2e)',
+        boxShadow: '0 0 12px #ffaa4488',
+      }} />
+    </div>
+  )
+}
+
 // ══════════════════════════════════════════════════════════════
 export default function TestRoomScene() {
   const [active, setActive]       = useState(() => new Set(['ambient', 'point', 'sky']))
@@ -336,7 +426,14 @@ export default function TestRoomScene() {
   const [locked, setLocked]       = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
   const [debugMode, setDebugMode] = useState(false)
+  const [aimMode, setAimMode]     = useState(false)
   const playerRef = useRef()
+
+  // 헤드 조준 상태 (React 리렌더 없이 매 프레임 갱신)
+  const headRotRef = useRef({ yaw: 0, pitch: 0 })
+  const aimVelRef  = useRef({ x: 0, y: 0 })
+  const bulbRef    = useRef()
+  const aimTgtRef  = useRef()
 
   function toggle(id) {
     setActive(prev => {
@@ -359,15 +456,28 @@ export default function TestRoomScene() {
   }
 
   useEffect(() => {
-    const fn = (e) => { if (e.code === 'Digit1') setDebugMode(v => !v) }
+    const fn = (e) => { if (e.code === 'Digit1' && !aimMode) setDebugMode(v => !v) }
     window.addEventListener('keydown', fn)
     return () => window.removeEventListener('keydown', fn)
-  }, [])
+  }, [aimMode])
 
   useEffect(() => {
     if (debugMode) { document.exitPointerLock(); setLocked(false) }
     else playerRef.current?.reset()
   }, [debugMode])
+
+  // 조준 모드: 포인터락 해제 · 조이스틱 입력 초기화. 종료 시 리스폰.
+  useEffect(() => {
+    if (aimMode) { document.exitPointerLock(); setLocked(false); aimVelRef.current = { x: 0, y: 0 } }
+    else playerRef.current?.reset()
+  }, [aimMode])
+
+  // spot 광원을 끄면 조준 모드도 강제 종료
+  useEffect(() => {
+    if (!active.has('spot') && aimMode) setAimMode(false)
+  }, [active, aimMode])
+
+  function enterAim() { setDebugMode(false); setAimMode(true) }
 
   function handleLockChange(isLocked) {
     setLocked(isLocked)
@@ -409,6 +519,14 @@ export default function TestRoomScene() {
         <span style={S.divider}>|</span>
         <button style={S.clearBtn} onClick={() => setActive(new Set())}>전체 끄기</button>
         <button style={{ ...S.clearBtn, marginLeft: -2 }} onClick={() => setActive(new Set(LIGHTS.map(l => l.id)))}>전체 켜기</button>
+        {active.has('spot') && (
+          <>
+            <span style={S.divider}>|</span>
+            <button style={S.toggle(aimMode, '#ffaa44')} onClick={() => aimMode ? setAimMode(false) : enterAim()}>
+              🎯 {aimMode ? '조준 종료' : '헤드 조준'}
+            </button>
+          </>
+        )}
       </div>
 
       {/* 파라미터 패널 */}
@@ -477,8 +595,23 @@ export default function TestRoomScene() {
         }}>+</div>
       )}
 
+      {/* 조준 모드 오버레이: 조이스틱 + 안내 */}
+      {aimMode && (
+        <>
+          <div style={{
+            position: 'absolute', top: 56, left: '50%', transform: 'translateX(-50%)',
+            zIndex: 20, color: '#ffc48a', fontFamily: 'monospace', fontSize: 12,
+            background: 'rgba(10,12,20,0.6)', padding: '4px 10px', borderRadius: 6,
+            border: '1px solid #ffaa4433', pointerEvents: 'none',
+          }}>
+            조이스틱으로 헤드(빛) 방향 조절 · 좌우=회전 · 상하=상하 조준
+          </div>
+          <Joystick velRef={aimVelRef} />
+        </>
+      )}
+
       {/* 첫 시작 오버레이 */}
-      {!locked && !hasStarted && (
+      {!locked && !hasStarted && !aimMode && (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
@@ -506,6 +639,20 @@ export default function TestRoomScene() {
           .map(l => <l.Component key={l.id} {...lightParams[l.id]} />)
         }
 
+        {active.has('spot') && (
+          <Suspense fallback={null}>
+            <TrackSpotLight
+              params={lightParams.spot}
+              headRotRef={headRotRef}
+              aimVelRef={aimVelRef}
+              aimMode={aimMode}
+              bulbRef={bulbRef}
+              targetRef={aimTgtRef}
+            />
+          </Suspense>
+        )}
+        <AimCamera active={aimMode} bulbRef={bulbRef} targetRef={aimTgtRef} />
+
         <SceneObjects />
 
         {debugMode && (
@@ -516,7 +663,7 @@ export default function TestRoomScene() {
           <RoomAssembled walls={walls} />
           <PlayerController
             ref={playerRef}
-            paused={debugMode}
+            paused={debugMode || aimMode}
             onLockChange={handleLockChange}
             onHover={() => {}}
             onInteract={() => {}}
