@@ -86,6 +86,21 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 - `SOLUTION.culprit_npc_id` — 범인 정체
 - `SOLUTION.correct_inference` — 정답 추론
 - `SOLUTION_CLUE` — 단서 체인 전체
+- `NPC_ATTRIBUTE` — 용의자 속성값 (정답 교집합 근거)
+
+런타임/마이그레이션 후에도 `SOLUTION`·`SOLUTION_CLUE`·`NPC_ATTRIBUTE`는 anon/플레이어 토큰으로 **읽기 차단**(정답 유출 금지, 채점은 서버측).
+
+---
+
+## 🗄️ DB 마이그레이션 — 확정 설계 결정
+
+localStorage → Supabase 전환 기준. 상세 대조는 `docs/erd-impl-status.md`(v0.5).
+
+- **기준 스키마**: 기획자 **MVP v0.5** — 34개 테이블(고정층 31 + 런타임 3).
+- **id 전략**: ERD대로 — 마스터/정의 = `int` PK, 인스턴스 = `uuid` PK. 기존 문자열 id(`ct-01` 등)는 uuid/int로 리매핑.
+- **인증**: Supabase **Edge Function 발급 JWT**. 계정 명부(`id/pw/role`)는 **서버측(Edge Function secret)** 에만 두고 프론트(`src/constants/users.js`)에서 제거. **이메일·PII 없음**(개인정보처리방침 회피).
+- **RLS 신원**: `auth.uid()`(JWT `sub`) + `auth.jwt() ->> 'role'`.
+- **인프라 추가 레이어**(기획 도메인 스키마엔 없음): `ACCOUNT` + `SCENARIO.owner_id`/`visibility`/timestamps + 활성 시나리오 지정. teacher 데이터 격리·기기 간 공유의 핵심.
 
 ---
 
@@ -93,7 +108,7 @@ PRE(브리핑) → MAIN ①채증(COL) ②실험(ANL) ③추론(INF) → POST(AI
 
 | 층  | 이름               | 시점                               | 테이블 |
 | --- | ------------------ | ---------------------------------- | ------ |
-| ①   | 고정층 (FIXED)     | 에디터 1회 저장 · 전 플레이 공유   | 26개   |
+| ①   | 고정층 (FIXED)     | 에디터 1회 저장 · 전 플레이 공유   | 31개 (v0.5) |
 | ②   | 가변층             | 진입 시 AI 생성 — 별도 테이블 없음 | -      |
 | ③   | 런타임층 (RUNTIME) | 플레이마다 생성                    | 3개    |
 
@@ -179,6 +194,8 @@ backend/
 | C          | 중학생      | 80%    | 5인       | 10분     |
 
 난이도 파라미터는 `grade_band`에서 읽는다. 하드코딩 금지.
+
+> **v0.5 변경 예정**: 학년(`GRADE_BAND` = 어휘·문체·통과선)과 난이도(`DIFFICULTY_DEF` = 훼손율·용의자수·증거상한)가 **분리**된다. 위 표는 현재 구현(grade_band가 모두 겸함) 기준이며, 마이그레이션 시 난이도 파라미터는 `DIFFICULTY_DEF`에서 읽도록 전환한다. 상세: `docs/erd-impl-status.md`.
 
 ---
 

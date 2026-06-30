@@ -25,18 +25,24 @@ description: Supabase 마이그레이션 SQL 파일을 검토한다. backend/mig
 
 ### PK 타입 컨벤션 (ERD 기준)
 
-마스터 테이블 (int PK):
-`objective_def`, `grade_band`, `case_type`, `process_def`, `place_category`, `evidence_def`
+마스터/정의 테이블 (int PK):
+`objective_def`, `grade_band`, `case_type`, `process_def`, `place_category`,
+`evidence_def`, `difficulty_def`, `attribute_def`, `job`
+
+규칙/매핑 테이블 (복합키 또는 int PK):
+`case_job_rule`, `case_evidence_rule`, `case_target_rule`,
+`place_evidence_rule`, `place_object_rule`, `evidence_anchor_rule`
 
 인스턴스 테이블 (uuid PK):
-`scenario`, `config`, `stage`, `place`, `space`, `npc`, `solution`, `solution_clue`,
-`generation_slot`, `generation_constraint`, `generated_content`, `play_session`, `play_result` 등
+`scenario`, `config`, `stage`, `place`, `space`, `space_anchor`, `target`,
+`npc`, `npc_attribute`, `solution`, `solution_clue`, `evidence`,
+`generation_slot`, `slot_target_ref`, `generation_constraint`,
+`generated_content`, `play_session`, `play_result` 등
 
 - [ ] 위 구분이 지켜졌는가?
 - [ ] 기존 문자열 id → uuid/int 리매핑 시 FK 참조도 모두 새 id로 치환됐는가? (고아 FK 없는가?)
-- [ ] `evidence_def` 스코프 — ERD는 글로벌 마스터(int PK)지만 현 구현은 시나리오별
-      `file`·`collider_size`·`mini_game` 확장 필드를 가진다. 마스터/인스턴스 중 어느 쪽으로
-      설계했는지 명시됐는가? (애매하면 WARNING)
+- [ ] `evidence_def`는 v0.5에서 **글로벌 마스터(int PK)** 로 확정됐다 — 현 구현의 3D 필드
+      `file`·`collider_size`(jsonb)·`mini_game`(jsonb)가 마스터에 보강됐는가? (없으면 게임 동작 불가)
 
 ### 소유권 · 공개여부 (teacher 데이터 격리)
 
@@ -54,8 +60,8 @@ description: Supabase 마이그레이션 SQL 파일을 검토한다. backend/mig
       `private`은 owner만 읽기인가?
 - [ ] 고정층 자식 테이블(`npc`, `evidence_def`, `config`, `generation_slot` 등)이 부모
       `scenario`의 소유권/공개여부를 따라 RLS가 걸렸는가?
-- [ ] 🔴 `solution` · `solution_clue`는 **anon/플레이어 토큰으로 읽기 차단**됐는가?
-      (정답 유출 방지 — 채점은 서버측. CLAUDE.md 불변 원칙)
+- [ ] 🔴 `solution` · `solution_clue` · `npc_attribute`는 **anon/플레이어 토큰으로 읽기 차단**됐는가?
+      (정답·교집합 근거 유출 방지 — 채점은 서버측. CLAUDE.md 불변 원칙)
 - [ ] `play_session`이 익명 세션(`anon_token`) 기준으로 RLS 적용됐는가?
 - [ ] `generated_content`가 자신의 `session_id`만 읽을 수 있는가?
 - [ ] `create policy`는 멱등이 아니다 — 재실행 대비 `drop policy if exists` 선행 또는
@@ -67,9 +73,10 @@ description: Supabase 마이그레이션 SQL 파일을 검토한다. backend/mig
       강제하는 지뢰 — `scenario`로)
 - [ ] JSON 컬럼이 `json`이 아니라 **`jsonb`** 인가? (`fallback_payload`, `generated_content.content`,
       `collider_size`, `mini_game`)
-- [ ] enum/check 제약이 있는가? — `npc_kind`(suspect/witness/briefer/target_character),
-      `visibility`(public/private), `slot_key`(S1~S5), `mini_game.type`(timing/rapidclick),
-      `rule_type` 등
+- [ ] enum/check 제약이 있는가? — `npc_kind`(briefer/suspect/target_character — v0.5에서
+      `witness` 삭제 여부 미확정, 기획 확인 전엔 WARNING), `visibility`(public/private),
+      `slot_key`(S1~S5), `slot_kind`(structural/narrative), `mini_game.type`(timing/rapidclick),
+      `attribute_def.type`(number/boolean/enum), `rule_type` 등
 - [ ] `created_at`/`updated_at timestamptz default now()` + `updated_at` 자동 갱신 트리거가 있는가?
       (db.js가 `updatedAt`을 유지하므로)
 
