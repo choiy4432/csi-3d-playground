@@ -1,7 +1,5 @@
 import fixedLayer from '../data/fixedLayer.json'
-
-const STORAGE_KEY = 'csi_fixedLayer'
-const PLACEMENTS_KEY = 'csi_placements'
+import { getActiveScenarioId, getScenario, PLACEMENTS_KEY } from './db'
 
 // Room01.glb 플로어 기준 — 벽과 충분한 여백 확보
 export const ROOM_BOUNDS = { x: [-2.5, 2.5], z: [-3.5, 1.5] }
@@ -29,13 +27,19 @@ function shuffle(arr) {
   return a
 }
 
+// 활성 시나리오(어드민에서 "활성 지정"한 것)를 로드.
+// 활성 시나리오가 없으면 기본 fixedLayer.json 으로 폴백 → 플레이어 씬이 깨지지 않음.
 export function loadFixedLayer() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : fixedLayer
+    const activeId = getActiveScenarioId()
+    if (activeId) {
+      const data = getScenario(activeId)
+      if (data) return data
+    }
   } catch {
-    return fixedLayer
+    /* noop */
   }
+  return fixedLayer
 }
 
 export function generateEvidencePlacements(gradeBand, data) {

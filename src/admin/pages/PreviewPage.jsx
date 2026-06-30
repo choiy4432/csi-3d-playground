@@ -4,8 +4,8 @@ import { OrbitControls } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import { Card, S, btn, badge } from '../shared.jsx'
 import { generateEvidencePlacements } from '../../services/mockGenerator.js'
-import Room from '../../Room.jsx'
-import CrimeScene from '../../CrimeScene.jsx'
+import Room from '../../scene/Room.jsx'
+import CrimeScene from '../../scene/CrimeScene.jsx'
 
 export default function PreviewPage({ data }) {
   const [gradeBand, setGradeBand] = useState(data.scenario.grade_band_id)
