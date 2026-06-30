@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, SaveBar, S, btn, badge } from '../shared.jsx'
+import { Card, SaveBar, S, btn, badge, C } from '../shared.jsx'
 
 const SLOT_KIND_OPTIONS = [
   { value: 'scene_narrative',    label: '사건 배경 설명' },
@@ -42,7 +42,7 @@ function SlotRow({ slot, onChange }) {
   return (
     <>
       <tr>
-        <td style={{ ...S.td, textAlign: 'center', fontWeight: 700, color: '#52525b' }}>
+        <td style={{ ...S.td, textAlign: 'center', fontWeight: 700, color: C.txtDim }}>
           {slot.generation_order}
         </td>
         <td style={S.td}>
@@ -50,7 +50,7 @@ function SlotRow({ slot, onChange }) {
             {slot.slot_key}
           </span>
           {' '}
-          <span style={{ fontSize: 12, color: '#71717a' }}>
+          <span style={{ fontSize: 12, color: C.txtMute }}>
             {SLOT_KEY_LABEL[slot.slot_key] ?? ''}
           </span>
         </td>
@@ -86,9 +86,9 @@ function SlotRow({ slot, onChange }) {
         </td>
       </tr>
       {open && (
-        <tr style={{ background: '#fafafa' }}>
+        <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
           <td colSpan={5} style={{ padding: '4px 12px 12px 36px' }}>
-            <p style={{ fontSize: 11, color: '#71717a', margin: '4px 0 4px' }}>
+            <p style={{ fontSize: 11, color: C.txtMute, margin: '4px 0 4px' }}>
               AI 생성 실패 시 사용할 기본값 (JSON 형식)
             </p>
             <textarea
@@ -97,7 +97,7 @@ function SlotRow({ slot, onChange }) {
               onChange={e => handleJson(e.target.value)}
             />
             {jsonError && (
-              <div style={{ color: '#dc2626', fontSize: 11, marginTop: 2 }}>{jsonError}</div>
+              <div style={{ color: C.danger, fontSize: 11, marginTop: 2 }}>{jsonError}</div>
             )}
           </td>
         </tr>
@@ -125,7 +125,7 @@ export default function SlotsPage({ data, onSave }) {
   return (
     <>
       <Card title="AI 생성 항목">
-        <p style={{ fontSize: 13, color: '#52525b', marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: C.txtDim, marginBottom: 16 }}>
           학생이 게임에 진입할 때 AI가 자동으로 생성하는 항목들입니다.
           생성 순서대로 실행되며, 이전 결과가 다음 생성에 활용됩니다.
         </p>
@@ -148,7 +148,7 @@ export default function SlotsPage({ data, onSave }) {
       </Card>
 
       <Card title="AI 생성 규칙">
-        <p style={{ fontSize: 13, color: '#52525b', marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: C.txtDim, marginBottom: 16 }}>
           AI가 생성한 결과물이 이 규칙을 통과하지 못하면 기본값으로 대체됩니다.
         </p>
         <table style={S.table}>
@@ -167,14 +167,14 @@ export default function SlotsPage({ data, onSave }) {
                     {slots.find(s => s.id === c.slot_id)?.slot_key ?? c.slot_id}
                   </span>
                   {' '}
-                  <span style={{ fontSize: 12, color: '#71717a' }}>
+                  <span style={{ fontSize: 12, color: C.txtMute }}>
                     {SLOT_KIND_LABEL[slots.find(s => s.id === c.slot_id)?.slot_kind] ?? ''}
                   </span>
                 </td>
                 <td style={S.td}>
-                  <code style={{ fontSize: 12, color: '#52525b', background: 'transparent' }}>{c.rule_type}</code>
+                  <code style={{ fontSize: 12, color: C.txtDim, background: 'transparent' }}>{c.rule_type}</code>
                 </td>
-                <td style={{ ...S.td, fontSize: 12, color: '#52525b' }}>{c.rule_value}</td>
+                <td style={{ ...S.td, fontSize: 12, color: C.txtDim }}>{c.rule_value}</td>
               </tr>
             ))}
           </tbody>

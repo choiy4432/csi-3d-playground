@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, S, btn, badge, IconBtn } from '../shared.jsx'
+import { C, Card, S, btn, badge, IconBtn, EmptyState } from '../shared.jsx'
 import {
   getScenarios, createScenario, duplicateScenario, deleteScenario,
   setVisibility, getActiveScenarioId, setActiveScenarioId, canEdit,
@@ -76,9 +76,21 @@ export default function ProjectsPage({ userId, onOpen }) {
       </div>
 
       {list.length === 0 ? (
-        <div style={{ padding: '32px 0', textAlign: 'center', color: '#a1a1aa', fontSize: 13 }}>
-          시나리오가 없습니다. <strong>+ 새 프로젝트</strong>로 시작하세요.
-        </div>
+        <EmptyState
+          icon={
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+            </svg>
+          }
+          title={tab === 'mine' ? '아직 만든 프로젝트가 없어요' : tab === 'public' ? '공개된 프로젝트가 없어요' : '프로젝트가 비어 있어요'}
+          hint="새 시나리오를 만들어 증거물·등장인물·정답을 구성해 보세요."
+          action={
+            tab !== 'public'
+              ? <button style={btn('primary')} onClick={handleCreate}>+ 새 프로젝트 만들기</button>
+              : null
+          }
+        />
       ) : (
         <table style={S.table}>
           <thead>
@@ -103,7 +115,7 @@ export default function ProjectsPage({ userId, onOpen }) {
                   <td style={S.td}>
                     {mine
                       ? <span style={badge('blue')}>나</span>
-                      : <span style={{ fontSize: 12, color: '#71717a' }}>{s.ownerId}</span>}
+                      : <span style={{ fontSize: 12, color: C.txtMute }}>{s.ownerId}</span>}
                   </td>
                   <td style={S.td}>
                     <span style={badge(s.visibility === 'public' ? 'green' : 'gray')}>
@@ -119,7 +131,7 @@ export default function ProjectsPage({ userId, onOpen }) {
                       {isActive ? '● 활성' : '활성 지정'}
                     </button>
                   </td>
-                  <td style={{ ...S.td, color: '#71717a', fontSize: 12, whiteSpace: 'nowrap' }}>
+                  <td style={{ ...S.td, color: C.txtMute, fontSize: 12, whiteSpace: 'nowrap' }}>
                     {fmtDate(s.updatedAt)}
                   </td>
                   <td style={{ ...S.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
@@ -128,7 +140,7 @@ export default function ProjectsPage({ userId, onOpen }) {
                         열기
                       </button>
                     ) : (
-                      <span style={{ fontSize: 11, color: '#a1a1aa', marginRight: 6 }}>열람: 복제 후 편집</span>
+                      <span style={{ fontSize: 11, color: C.txtFaint, marginRight: 6 }}>열람: 복제 후 편집</span>
                     )}
                     <IconBtn icon="📑" title="복제" onClick={() => handleDuplicate(s.id)} />
                     {mine && (

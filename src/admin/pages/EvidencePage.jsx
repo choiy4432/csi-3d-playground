@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, Field, SaveBar, IconBtn, S, btn, badge } from '../shared.jsx'
+import { Card, Field, SaveBar, IconBtn, S, btn, badge, C, TableEmpty } from '../shared.jsx'
 
 const _MODEL_GLOB = import.meta.glob('../../../public/models/*.glb', { query: '?url', import: 'default', eager: true })
 const AVAILABLE_MODELS = Object.keys(_MODEL_GLOB).map(p => p.split('/').pop()).sort()
@@ -53,10 +53,10 @@ function EvidenceModal({ ev, onClose, onConfirm }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
     }}>
       <div style={{
-        background: '#fff', borderRadius: 10, padding: 28, width: 460,
+        background: C.surface, borderRadius: 10, padding: 28, width: 460,
         maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
       }}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, color: '#1a1a1a' }}>증거물 편집</h3>
+        <h3 style={{ margin: '0 0 20px', fontSize: 15, color: C.txt }}>증거물 편집</h3>
 
         <Field label="증거물 이름">
           <input style={S.input} value={form.name}
@@ -77,7 +77,7 @@ function EvidenceModal({ ev, onClose, onConfirm }) {
           <div style={{ display: 'flex', gap: 8 }}>
             {['가로', '높이', '깊이'].map((axis, i) => (
               <div key={axis} style={{ flex: 1 }}>
-                <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 3 }}>{axis}</label>
+                <label style={{ fontSize: 11, color: C.txtMute, display: 'block', marginBottom: 3 }}>{axis}</label>
                 <input type="number" step="0.1" min="0.1"
                   style={S.input}
                   value={form.colliderSize[i]}
@@ -88,8 +88,8 @@ function EvidenceModal({ ev, onClose, onConfirm }) {
           </div>
         </Field>
 
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', marginBottom: 12 }}>
+        <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: C.txtMute, textTransform: 'uppercase', marginBottom: 12 }}>
             채증 활동
           </p>
           <Field label="활동 유형" hint="학생이 이 증거물을 채증할 때 진행할 미니게임 방식입니다.">
@@ -188,11 +188,26 @@ export default function EvidencePage({ data, onSave }) {
             </tr>
           </thead>
           <tbody>
+            {evidences.length === 0 && (
+              <TableEmpty
+                colSpan={5}
+                icon={
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" />
+                  </svg>
+                }
+                title="등록된 증거물이 없어요"
+                hint="증거물을 추가하면 학생이 3D 씬에서 채증할 수 있어요."
+                action={<button style={btn('primary')} onClick={openAdd}>+ 증거물 추가</button>}
+              />
+            )}
             {evidences.map(ev => (
               <tr key={ev.id}>
                 <td style={S.td}>{ev.name}</td>
                 <td style={S.td}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#374151' }}>{ev.file}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#d6d5e0' }}>{ev.file}</span>
                 </td>
                 <td style={S.td}>
                   {ev.colliderSize.join(' × ')}
@@ -202,7 +217,7 @@ export default function EvidencePage({ data, onSave }) {
                     {MINIGAME_LABEL[ev.miniGame.type] ?? ev.miniGame.type}
                   </span>
                   {' '}
-                  <span style={{ color: '#52525b' }}>{ev.miniGame.label}</span>
+                  <span style={{ color: C.txtDim }}>{ev.miniGame.label}</span>
                 </td>
                 <td style={S.td}>
                   <IconBtn icon="✏️" title="편집" onClick={() => openEdit(ev)} />

@@ -1,67 +1,107 @@
+// ── 어드민 다크 디자인 시스템 (Linear-tier) ─────────────────────────
+// 단일 진실 소스(C 토큰)로 전 페이지의 다크 톤을 통일한다.
+// 로그인 화면과 동일한 팔레트·억제된 보라 단일 액센트.
+// 인라인 스타일은 :hover/:focus/스크롤바를 표현할 수 없어,
+// AdminStyles 전역 <style>(.csi-admin 스코프)에서 보강한다.
+
+export const C = {
+  appBg:      '#0b0b10', // 콘텐츠 배경
+  surface:    '#14141d', // 카드
+  surfaceUp:  '#1b1b25', // 라이즈드 / 행 hover
+  sunken:     '#0e0e15', // 인풋 배경
+  line:       'rgba(255,255,255,0.08)',
+  lineSoft:   'rgba(255,255,255,0.05)',
+  lineStrong: 'rgba(255,255,255,0.13)',
+  txt:        '#e8e7ef',
+  txtDim:     '#9d9cae',
+  txtMute:    '#7c7b8c',
+  txtFaint:   '#5b5a6b',
+  accent:     '#b9a4f0',
+  accent2:    '#cbb8ff',
+  accentBg:   'rgba(185,164,240,0.10)',
+  accentBd:   'rgba(185,164,240,0.45)',
+  danger:     '#f0879f',
+  dangerBg:   'rgba(240,135,159,0.10)',
+  dangerBd:   'rgba(240,135,159,0.30)',
+  ok:         '#86e3ad',
+  warn:       '#f1cf8e',
+}
+
 export const S = {
   card: {
-    background: '#fff', border: '1px solid #e4e4e7', borderRadius: 8,
-    padding: '20px 24px', marginBottom: 20,
+    background: C.surface,
+    border: `1px solid ${C.line}`,
+    borderRadius: 14,
+    padding: '22px 24px',
+    marginBottom: 20,
+    boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -28px rgba(0,0,0,0.8)',
   },
   cardHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 12, fontWeight: 700, color: '#71717a',
-    textTransform: 'uppercase', letterSpacing: 0.5, margin: 0,
+    fontSize: 11, fontWeight: 600, color: C.txtMute,
+    textTransform: 'uppercase', letterSpacing: 1, margin: 0,
   },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  table: { width: '100%', borderCollapse: 'collapse', fontSize: 13, color: C.txt },
   th: {
-    textAlign: 'left', padding: '8px 12px',
-    borderBottom: '2px solid #e4e4e7', color: '#52525b', fontWeight: 600,
-    whiteSpace: 'nowrap', fontSize: 12,
+    textAlign: 'left', padding: '9px 12px',
+    borderBottom: `1px solid ${C.lineStrong}`, color: C.txtDim, fontWeight: 600,
+    whiteSpace: 'nowrap', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4,
   },
-  td: { padding: '8px 12px', borderBottom: '1px solid #f4f4f5', verticalAlign: 'middle' },
+  td: { padding: '10px 12px', borderBottom: `1px solid ${C.lineSoft}`, verticalAlign: 'middle', color: C.txt },
   input: {
-    padding: '5px 8px', border: '1px solid #e4e4e7', borderRadius: 4,
+    padding: '8px 11px', border: `1px solid ${C.line}`, borderRadius: 9,
     fontSize: 13, width: '100%', boxSizing: 'border-box',
-    background: '#fafafa', color: '#1a1a1a', outline: 'none',
+    background: C.sunken, color: C.txt, outline: 'none',
   },
   textarea: {
-    padding: '6px 8px', border: '1px solid #e4e4e7', borderRadius: 4,
+    padding: '9px 11px', border: `1px solid ${C.line}`, borderRadius: 9,
     fontSize: 12, width: '100%', boxSizing: 'border-box',
-    background: '#fafafa', color: '#1a1a1a',
-    fontFamily: 'monospace', resize: 'vertical', outline: 'none',
+    background: C.sunken, color: C.txt,
+    fontFamily: 'ui-monospace, "JetBrains Mono", Consolas, monospace', resize: 'vertical', outline: 'none',
   },
   select: {
-    padding: '5px 8px', border: '1px solid #e4e4e7', borderRadius: 4,
-    fontSize: 13, background: '#fafafa', color: '#1a1a1a', width: '100%', outline: 'none',
+    padding: '8px 11px', border: `1px solid ${C.line}`, borderRadius: 9,
+    fontSize: 13, background: C.sunken, color: C.txt, width: '100%', outline: 'none',
   },
   warning: {
-    background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6,
-    padding: '10px 14px', fontSize: 12, color: '#92400e', marginBottom: 16,
+    background: 'rgba(241,207,142,0.08)', border: '1px solid rgba(241,207,142,0.28)', borderRadius: 10,
+    padding: '10px 14px', fontSize: 12, color: C.warn, marginBottom: 16,
   },
 }
 
 export function btn(variant = 'default') {
   const map = {
-    primary: { background: '#6d28d9', color: '#fff' },
-    danger:  { background: '#dc2626', color: '#fff' },
-    default: { background: '#f4f4f5', color: '#3f3f46' },
-    ghost:   { background: 'none', color: '#6b7280', border: '1px solid #e4e4e7' },
+    primary: {
+      background: `linear-gradient(180deg, ${C.accent2}, ${C.accent})`,
+      color: '#1b1530',
+      boxShadow: '0 1px 0 rgba(255,255,255,0.45) inset, 0 10px 22px -12px rgba(150,124,232,0.6)',
+    },
+    danger:  { background: C.dangerBg, color: C.danger, border: `1px solid ${C.dangerBd}` },
+    default: { background: 'rgba(255,255,255,0.06)', color: '#d6d5e0', border: `1px solid ${C.line}` },
+    ghost:   { background: 'transparent', color: C.txtDim, border: `1px solid ${C.line}` },
   }
   return {
-    padding: '6px 14px', border: 'none', borderRadius: 5,
-    cursor: 'pointer', fontSize: 13, fontWeight: 500,
+    padding: '7px 15px', border: 'none', borderRadius: 999,
+    cursor: 'pointer', fontSize: 13, fontWeight: 600, letterSpacing: 0.1,
+    transition: 'transform 0.4s cubic-bezier(0.32,0.72,0,1), filter 0.3s ease, background 0.3s ease',
     ...(map[variant] ?? map.default),
   }
 }
 
 export function badge(color) {
   const map = {
-    blue:   { background: '#dbeafe', color: '#1d4ed8' },
-    green:  { background: '#dcfce7', color: '#15803d' },
-    yellow: { background: '#fef3c7', color: '#b45309' },
-    gray:   { background: '#f4f4f5', color: '#52525b' },
+    blue:   { background: 'rgba(122,162,255,0.14)', color: '#a7c0ff' },
+    green:  { background: 'rgba(120,214,160,0.15)', color: '#95e3b5' },
+    yellow: { background: 'rgba(240,200,120,0.15)', color: '#f1d49a' },
+    purple: { background: 'rgba(185,164,240,0.16)', color: '#cbb8ff' },
+    orange: { background: 'rgba(245,176,120,0.15)', color: '#f3c89a' },
+    gray:   { background: 'rgba(255,255,255,0.07)', color: '#b3b2c2' },
   }
   return {
-    display: 'inline-block', padding: '2px 8px', borderRadius: 12,
-    fontSize: 11, fontWeight: 600,
+    display: 'inline-block', padding: '2px 9px', borderRadius: 999,
+    fontSize: 11, fontWeight: 600, letterSpacing: 0.2,
     ...(map[color] ?? map.gray),
   }
 }
@@ -83,11 +123,11 @@ export function Card({ title, children, action }) {
 export function Field({ label, children, hint }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#52525b', marginBottom: 4 }}>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.txtDim, marginBottom: 5 }}>
         {label}
       </label>
       {children}
-      {hint && <div style={{ fontSize: 11, color: '#a1a1aa', marginTop: 3 }}>{hint}</div>}
+      {hint && <div style={{ fontSize: 11, color: C.txtFaint, marginTop: 4 }}>{hint}</div>}
     </div>
   )
 }
@@ -109,11 +149,157 @@ export function IconBtn({ icon, title, onClick, danger }) {
       onClick={onClick}
       style={{
         background: 'none', border: 'none', cursor: 'pointer',
-        fontSize: 14, padding: '2px 5px',
-        color: danger ? '#dc2626' : '#6b7280',
+        fontSize: 14, padding: '3px 6px', borderRadius: 7,
+        color: danger ? C.danger : C.txtMute,
+        transition: 'background 0.2s ease, color 0.2s ease',
       }}
     >
       {icon}
     </button>
   )
 }
+
+// 빈 상태 — 이중 베젤 메달리온 + 타이틀 + 힌트 + 선택적 CTA.
+export function EmptyState({ icon, title, hint, action }) {
+  return (
+    <div className="csi-empty" style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      textAlign: 'center', padding: '46px 24px 40px',
+    }}>
+      <div style={{
+        width: 60, height: 60, borderRadius: 999, padding: 6, marginBottom: 18,
+        background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.line}`,
+        boxShadow: '0 1px 0 rgba(255,255,255,0.05) inset',
+      }}>
+        <div style={{
+          width: '100%', height: '100%', borderRadius: 999,
+          background: C.sunken, color: C.accent,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 1px 1px rgba(255,255,255,0.08) inset',
+        }}>
+          {icon ?? <DocGlyph />}
+        </div>
+      </div>
+      <div style={{
+        fontFamily: 'Space Grotesk, sans-serif', fontSize: 15, fontWeight: 600,
+        color: C.txt, letterSpacing: '-0.01em', marginBottom: 6,
+      }}>
+        {title}
+      </div>
+      {hint && (
+        <div style={{ fontSize: 13, color: C.txtMute, lineHeight: 1.6, maxWidth: 320 }}>
+          {hint}
+        </div>
+      )}
+      {action && <div style={{ marginTop: 20 }}>{action}</div>}
+    </div>
+  )
+}
+
+// 테이블 tbody 안에서 쓰는 빈 상태 행.
+export function TableEmpty({ colSpan, ...rest }) {
+  return (
+    <tr className="csi-nohover">
+      <td colSpan={colSpan} style={{ padding: 0, borderBottom: 'none' }}>
+        <EmptyState {...rest} />
+      </td>
+    </tr>
+  )
+}
+
+// 셔머 스켈레톤 블록. w/h/radius로 형태 조정.
+export function Skeleton({ w = '100%', h = 14, radius = 7, style }) {
+  return <div className="csi-skeleton" style={{ width: w, height: h, borderRadius: radius, ...style }} />
+}
+
+function DocGlyph() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+      <path d="M14 3v5h5" />
+    </svg>
+  )
+}
+
+// 전역 어드민 스타일 — 폰트·포커스 링·행 hover·스크롤바.
+// AdminApp 루트(.csi-admin)에 1회 마운트. 인라인 base 위에 :focus/:hover를
+// 얹기 위해 일부 규칙은 !important 필요.
+export function AdminStyles() {
+  return <style>{ADMIN_CSS}</style>
+}
+
+const ADMIN_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+.csi-admin {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+}
+.csi-admin h1, .csi-admin h2, .csi-admin h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.csi-admin input:focus,
+.csi-admin textarea:focus,
+.csi-admin select:focus {
+  border-color: ${C.accentBd} !important;
+  box-shadow: 0 0 0 3px rgba(185,164,240,0.14) !important;
+}
+.csi-admin input:hover:not(:focus),
+.csi-admin textarea:hover:not(:focus),
+.csi-admin select:hover:not(:focus) {
+  border-color: rgba(255,255,255,0.16) !important;
+}
+
+.csi-admin button { transition: transform 0.4s cubic-bezier(0.32,0.72,0,1), filter 0.3s ease, background 0.2s ease; }
+.csi-admin button:hover { filter: brightness(1.08); }
+.csi-admin button:active { transform: scale(0.97); }
+.csi-admin button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(185,164,240,0.32) !important;
+}
+
+.csi-admin tbody tr { transition: background 0.18s ease; }
+.csi-admin tbody tr:hover { background: ${C.surfaceUp}; }
+.csi-admin tbody tr.csi-nohover:hover { background: transparent; }
+
+.csi-empty { animation: csiEmptyIn 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes csiEmptyIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.csi-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.05);
+}
+.csi-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+  animation: csiShimmer 1.6s cubic-bezier(0.4,0,0.6,1) infinite;
+}
+@keyframes csiShimmer { to { transform: translateX(100%); } }
+
+.csi-admin ::placeholder { color: ${C.txtFaint}; }
+
+.csi-admin ::-webkit-scrollbar { width: 11px; height: 11px; }
+.csi-admin ::-webkit-scrollbar-track { background: transparent; }
+.csi-admin ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.09);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+.csi-admin ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); background-clip: padding-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  .csi-admin * { transition: none !important; }
+}
+`

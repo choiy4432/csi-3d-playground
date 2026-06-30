@@ -1,30 +1,31 @@
-import { S } from "../shared.jsx";
+import { C } from "../shared.jsx";
 
 const T = {
   section: {
-    background: "#fff",
-    border: "1px solid #e4e4e7",
-    borderRadius: 8,
-    padding: "20px 24px",
+    background: C.surface,
+    border: `1px solid ${C.line}`,
+    borderRadius: 14,
+    padding: "22px 24px",
     marginBottom: 20,
+    boxShadow: "0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -28px rgba(0,0,0,0.8)",
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: 700,
-    color: "#1a1a1a",
-    borderBottom: "2px solid #e4e4e7",
-    paddingBottom: 8,
+    color: C.txt,
+    borderBottom: `1px solid ${C.lineStrong}`,
+    paddingBottom: 10,
     marginBottom: 16,
   },
   h3: {
     fontSize: 13,
     fontWeight: 700,
-    color: "#3f3f46",
+    color: "#d6d5e0",
     margin: "20px 0 8px",
   },
   p: {
     fontSize: 13,
-    color: "#52525b",
+    color: C.txtDim,
     lineHeight: 1.7,
     margin: "0 0 8px",
   },
@@ -36,42 +37,43 @@ const T = {
   },
   th: {
     textAlign: "left",
-    padding: "6px 10px",
-    background: "#f4f4f5",
-    borderBottom: "1px solid #e4e4e7",
+    padding: "7px 10px",
+    background: "rgba(255,255,255,0.04)",
+    borderBottom: `1px solid ${C.line}`,
     fontWeight: 700,
-    color: "#3f3f46",
+    color: "#d6d5e0",
     whiteSpace: "nowrap",
   },
   td: {
-    padding: "6px 10px",
-    borderBottom: "1px solid #f4f4f5",
+    padding: "7px 10px",
+    borderBottom: `1px solid ${C.lineSoft}`,
     verticalAlign: "top",
+    color: C.txt,
   },
   code: {
-    fontFamily: "monospace",
+    fontFamily: "ui-monospace, 'JetBrains Mono', Consolas, monospace",
     fontSize: 11,
-    background: "#f4f4f5",
-    padding: "1px 5px",
-    borderRadius: 3,
-    color: "#6d28d9",
+    background: C.accentBg,
+    padding: "1px 6px",
+    borderRadius: 5,
+    color: C.accent,
   },
   note: {
-    background: "#f0fdf4",
-    border: "1px solid #bbf7d0",
-    borderRadius: 6,
-    padding: "8px 12px",
+    background: "rgba(120,214,160,0.10)",
+    border: "1px solid rgba(120,214,160,0.28)",
+    borderRadius: 10,
+    padding: "9px 13px",
     fontSize: 12,
-    color: "#166534",
+    color: C.ok,
     margin: "8px 0",
   },
   warn: {
-    background: "#fffbeb",
-    border: "1px solid #fcd34d",
-    borderRadius: 6,
-    padding: "8px 12px",
+    background: "rgba(241,207,142,0.08)",
+    border: "1px solid rgba(241,207,142,0.28)",
+    borderRadius: 10,
+    padding: "9px 13px",
     fontSize: 12,
-    color: "#92400e",
+    color: C.warn,
     margin: "8px 0",
   },
   flow: {
@@ -82,15 +84,15 @@ const T = {
     margin: "12px 0",
   },
   flowItem: (highlight) => ({
-    padding: "6px 12px",
-    borderRadius: 6,
+    padding: "6px 13px",
+    borderRadius: 999,
     fontSize: 12,
     fontWeight: 700,
-    background: highlight ? "#6d28d9" : "#f4f4f5",
-    color: highlight ? "#fff" : "#3f3f46",
-    border: "1px solid " + (highlight ? "#6d28d9" : "#e4e4e7"),
+    background: highlight ? C.accent : "rgba(255,255,255,0.06)",
+    color: highlight ? "#1b1530" : "#d6d5e0",
+    border: "1px solid " + (highlight ? C.accent : C.line),
   }),
-  arrow: { color: "#9ca3af", fontSize: 14 },
+  arrow: { color: C.txtFaint, fontSize: 14 },
 };
 
 function Code({ children }) {
@@ -123,7 +125,7 @@ function FieldTable({ rows }) {
             <td style={T.td}>
               <Code>{field}</Code>
             </td>
-            <td style={{ ...T.td, color: "#52525b" }}>{desc}</td>
+            <td style={{ ...T.td, color: C.txtDim }}>{desc}</td>
           </tr>
         ))}
       </tbody>
@@ -134,10 +136,10 @@ function FieldTable({ rows }) {
 export default function InfoPage() {
   return (
     <div>
-      <div style={{ ...T.section, background: "#1e1e2e", color: "#cdd6f4" }}>
+      <div style={{ ...T.section, background: C.accentBg, border: `1px solid ${C.accentBd}`, color: C.txt }}>
         <p style={{ fontSize: 13, margin: 0, lineHeight: 1.8 }}>
           이 페이지는{" "}
-          <strong style={{ color: "#cba6f7" }}>개발자 참고용</strong>입니다. 각
+          <strong style={{ color: C.accent }}>개발자 참고용</strong>입니다. 각
           에디터 화면에서 사용하는 내부 필드명, 데이터 구조, AI 생성 흐름을
           설명합니다. 일반 사용자는 이 페이지를 열 필요가 없습니다.
         </p>
@@ -395,7 +397,7 @@ export default function InfoPage() {
             </>
           ))}
         </div>
-        <p style={{ ...T.p, fontSize: 12, color: "#71717a" }}>
+        <p style={{ ...T.p, fontSize: 12, color: C.txtMute }}>
           각 슬롯은 이전 슬롯의 생성 결과를 컨텍스트로 받아 프롬프트를
           조립합니다.
         </p>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, IconBtn, S, btn } from '../shared.jsx'
+import { C, Card, IconBtn, S, btn } from '../shared.jsx'
 
 function nextId(prefix, list) {
   const max = list.reduce((m, r) => {
@@ -18,24 +18,24 @@ function RuleChips({ title, rules, fieldKey, placeholder, onAdd, onDelete }) {
   }
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#52525b', marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.txtDim, marginBottom: 6 }}>{title}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
         {rules.length === 0 && (
-          <span style={{ fontSize: 12, color: '#a1a1aa' }}>규칙 없음</span>
+          <span style={{ fontSize: 12, color: C.txtFaint }}>규칙 없음</span>
         )}
         {rules.map(r => (
           <span
             key={r.id}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
-              background: '#f4f4f5', border: '1px solid #e4e4e7',
+              background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.line}`,
               borderRadius: 6, padding: '4px 10px', fontSize: 12,
             }}
           >
             {r[fieldKey]}
             <button
               onClick={() => onDelete(r.id)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 13, padding: 0, lineHeight: 1 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.danger, fontSize: 13, padding: 0, lineHeight: 1 }}
             >
               ✕
             </button>
@@ -133,11 +133,11 @@ export default function CaseTypePage({ data, onSave }) {
               <tr
                 key={ct.id}
                 onClick={() => { if (editId !== ct.id) setSelectedId(ct.id) }}
-                style={{ background: ct.id === selectedId ? '#f5f3ff' : undefined, cursor: 'pointer' }}
+                style={{ background: ct.id === selectedId ? C.accentBg : undefined, cursor: 'pointer' }}
               >
                 {editId === ct.id ? (
                   <>
-                    <td style={S.td}><span style={{ color: '#a1a1aa', fontSize: 11 }}>{ct.id}</span></td>
+                    <td style={S.td}><span style={{ color: C.txtFaint, fontSize: 11 }}>{ct.id}</span></td>
                     <td style={S.td}>
                       <input
                         style={S.input}
@@ -159,9 +159,9 @@ export default function CaseTypePage({ data, onSave }) {
                   </>
                 ) : (
                   <>
-                    <td style={{ ...S.td, color: '#a1a1aa', fontSize: 11 }}>{ct.id}</td>
+                    <td style={{ ...S.td, color: C.txtFaint, fontSize: 11 }}>{ct.id}</td>
                     <td style={S.td}><strong>{ct.name}</strong></td>
-                    <td style={{ ...S.td, color: '#52525b' }}>{ct.description}</td>
+                    <td style={{ ...S.td, color: C.txtDim }}>{ct.description}</td>
                     <td style={S.td} onClick={e => e.stopPropagation()}>
                       <IconBtn icon="✏️" title="편집" onClick={() => { setEditId(ct.id); setEditForm({ ...ct }) }} />
                       <IconBtn icon="🗑️" title="삭제" onClick={() => handleDelete(ct.id)} danger />
@@ -171,8 +171,8 @@ export default function CaseTypePage({ data, onSave }) {
               </tr>
             ))}
             {adding && (
-              <tr style={{ background: '#f9f9ff' }}>
-                <td style={{ ...S.td, color: '#a1a1aa', fontSize: 11 }}>자동 부여</td>
+              <tr style={{ background: C.accentBg }}>
+                <td style={{ ...S.td, color: C.txtFaint, fontSize: 11 }}>자동 부여</td>
                 <td style={S.td}>
                   <input
                     style={S.input}
@@ -203,7 +203,7 @@ export default function CaseTypePage({ data, onSave }) {
 
       {selected ? (
         <Card title={`규칙 설정 — "${selected.name}" (${selected.id})`}>
-          <div style={{ marginBottom: 8, fontSize: 12, color: '#71717a' }}>
+          <div style={{ marginBottom: 8, fontSize: 12, color: C.txtMute }}>
             아래 규칙은 AI 슬롯 생성 시 프롬프트 제약 조건으로 활용됩니다.
           </div>
           <RuleChips
@@ -232,7 +232,7 @@ export default function CaseTypePage({ data, onSave }) {
           />
         </Card>
       ) : (
-        <div style={{ color: '#a1a1aa', fontSize: 13, padding: 16 }}>
+        <div style={{ color: C.txtFaint, fontSize: 13, padding: 16 }}>
           위 목록에서 사건 유형을 선택하면 규칙을 편집할 수 있습니다.
         </div>
       )}
