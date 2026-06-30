@@ -70,6 +70,13 @@
       "file": "old_art_Book.glb",
       "colliderSize": [0.8, 0.6, 1.0],
       "miniGame": { "type": "timing", "label": "잉크 검출", "difficulty": "easy" }
+    },
+    {
+      "id": "ev-05",
+      "name": "핀셋",
+      "file": "pincette.glb",
+      "colliderSize": [0.5, 0.8, 0.5],
+      "miniGame": { "type": "rapidclick", "label": "미세 섬유 채취", "target": 6, "time": 8 }
     }
   ],
   "generationSlots": [
