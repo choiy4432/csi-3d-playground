@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { C, Card, IconBtn, S, btn } from '../shared.jsx'
+import { C, Card, IconBtn, ActionIcon, S, btn } from '../shared.jsx'
 
 function nextId(prefix, list) {
   const max = list.reduce((m, r) => {
@@ -35,9 +35,11 @@ function RuleChips({ title, rules, fieldKey, placeholder, onAdd, onDelete }) {
             {r[fieldKey]}
             <button
               onClick={() => onDelete(r.id)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.danger, fontSize: 13, padding: 0, lineHeight: 1 }}
+              title="삭제"
+              aria-label="삭제"
+              style={{ display: 'inline-flex', background: 'none', border: 'none', cursor: 'pointer', color: C.txtFaint, padding: 0, lineHeight: 1 }}
             >
-              ✕
+              <ActionIcon name="cancel" size={13} />
             </button>
           </span>
         ))}
@@ -153,8 +155,8 @@ export default function CaseTypePage({ data, onSave }) {
                       />
                     </td>
                     <td style={S.td} onClick={e => e.stopPropagation()}>
-                      <IconBtn icon="✓" title="저장" onClick={commitEdit} />
-                      <IconBtn icon="✕" title="취소" onClick={() => setEditId(null)} />
+                      <IconBtn name="confirm" title="저장" onClick={commitEdit} />
+                      <IconBtn name="cancel" title="취소" onClick={() => setEditId(null)} />
                     </td>
                   </>
                 ) : (
@@ -163,8 +165,8 @@ export default function CaseTypePage({ data, onSave }) {
                     <td style={S.td}><strong>{ct.name}</strong></td>
                     <td style={{ ...S.td, color: C.txtDim }}>{ct.description}</td>
                     <td style={S.td} onClick={e => e.stopPropagation()}>
-                      <IconBtn icon="✏️" title="편집" onClick={() => { setEditId(ct.id); setEditForm({ ...ct }) }} />
-                      <IconBtn icon="🗑️" title="삭제" onClick={() => handleDelete(ct.id)} danger />
+                      <IconBtn name="edit" title="편집" onClick={() => { setEditId(ct.id); setEditForm({ ...ct }) }} />
+                      <IconBtn name="delete" title="삭제" onClick={() => handleDelete(ct.id)} danger />
                     </td>
                   </>
                 )}
@@ -192,8 +194,8 @@ export default function CaseTypePage({ data, onSave }) {
                   />
                 </td>
                 <td style={S.td}>
-                  <IconBtn icon="✓" title="추가" onClick={handleAdd} />
-                  <IconBtn icon="✕" title="취소" onClick={() => setAdding(false)} />
+                  <IconBtn name="confirm" title="추가" onClick={handleAdd} />
+                  <IconBtn name="cancel" title="취소" onClick={() => setAdding(false)} />
                 </td>
               </tr>
             )}

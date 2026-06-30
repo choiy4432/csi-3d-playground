@@ -110,7 +110,21 @@ export default function ProjectsPage({ userId, onOpen }) {
               return (
                 <tr key={s.id}>
                   <td style={S.td}>
-                    <strong>{s.title}</strong>
+                    {mine ? (
+                      <button
+                        className="csi-titlelink"
+                        onClick={() => onOpen(s.id)}
+                        style={{
+                          background: 'none', border: 'none', padding: 0, textAlign: 'left',
+                          fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+                          color: C.txt, cursor: 'pointer',
+                        }}
+                      >
+                        {s.title}
+                      </button>
+                    ) : (
+                      <strong>{s.title}</strong>
+                    )}
                   </td>
                   <td style={S.td}>
                     {mine
@@ -126,7 +140,7 @@ export default function ProjectsPage({ userId, onOpen }) {
                     <button
                       style={{ ...btn(isActive ? 'primary' : 'ghost'), fontSize: 11, padding: '3px 10px' }}
                       onClick={() => handleSetActive(s.id)}
-                      title="학생 플레이 씬에 띄울 시나리오로 지정"
+                      data-tip="학생 플레이 씬에 띄울 시나리오로 지정"
                     >
                       {isActive ? '● 활성' : '활성 지정'}
                     </button>
@@ -135,22 +149,18 @@ export default function ProjectsPage({ userId, onOpen }) {
                     {fmtDate(s.updatedAt)}
                   </td>
                   <td style={{ ...S.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
-                    {mine ? (
-                      <button style={{ ...btn('default'), fontSize: 12, padding: '4px 12px' }} onClick={() => onOpen(s.id)}>
-                        열기
-                      </button>
-                    ) : (
+                    {!mine && (
                       <span style={{ fontSize: 11, color: C.txtFaint, marginRight: 6 }}>열람: 복제 후 편집</span>
                     )}
-                    <IconBtn icon="📑" title="복제" onClick={() => handleDuplicate(s.id)} />
+                    <IconBtn name="duplicate" title="복제" onClick={() => handleDuplicate(s.id)} />
                     {mine && (
                       <IconBtn
-                        icon={s.visibility === 'public' ? '🔒' : '🌐'}
+                        name={s.visibility === 'public' ? 'lock' : 'globe'}
                         title={s.visibility === 'public' ? '비공개로 전환' : '공개로 전환'}
                         onClick={() => handleToggleVis(s)}
                       />
                     )}
-                    {mine && <IconBtn icon="🗑️" title="삭제" onClick={() => handleDelete(s.id, s.title)} danger />}
+                    {mine && <IconBtn name="delete" title="삭제" onClick={() => handleDelete(s.id, s.title)} danger />}
                   </td>
                 </tr>
               )

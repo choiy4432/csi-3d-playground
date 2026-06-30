@@ -97,7 +97,7 @@ export default function SolutionPage({ data, onSave }) {
                   />
                 </td>
                 <td style={S.td}>
-                  <IconBtn icon="🗑️" title="삭제" onClick={() => removeClue(clue.id)} danger />
+                  <IconBtn name="delete" title="삭제" onClick={() => removeClue(clue.id)} danger />
                 </td>
               </tr>
             ))}

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
-import { C, Card, S, btn, badge, Skeleton } from '../shared.jsx'
+import { C, Card, S, btn, badge, Skeleton, ActionIcon } from '../shared.jsx'
 import { generateEvidencePlacements } from '../../services/mockGenerator.js'
 import Room from '../../scene/Room.jsx'
 import CrimeScene from '../../scene/CrimeScene.jsx'
@@ -72,10 +72,11 @@ export default function PreviewPage({ data }) {
             </button>
           ))}
           <button
-            style={{ ...btn('ghost'), fontSize: 12, padding: '4px 12px', marginLeft: 'auto' }}
+            style={{ ...btn('ghost'), fontSize: 12, padding: '4px 14px', marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}
             onClick={() => setPlacements(generateEvidencePlacements(gradeBand, data))}
           >
-            🔄 재생성
+            <ActionIcon name="refresh" size={13} />
+            재생성
           </button>
         </div>
 
