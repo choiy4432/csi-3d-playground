@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { getSession, logout, refreshActivity, SESSION_KEY } from '../services/auth'
 import { getScenario, getScenarioMeta, saveScenario, canEdit } from '../services/db'
+import { C, AdminStyles } from './shared.jsx'
 import LoginPage from './LoginPage.jsx'
 import ProjectsPage from './pages/ProjectsPage.jsx'
 import ScenarioPage from './pages/ScenarioPage.jsx'
@@ -33,67 +34,73 @@ const LABELS = {
 
 const S = {
   root: {
-    display: 'flex', height: '100vh', fontFamily: 'sans-serif',
-    background: '#f5f5f5', color: '#1a1a1a',
+    display: 'flex', height: '100vh',
+    background: C.appBg, color: C.txt,
   },
   sidebar: {
-    width: 220, background: '#1e1e2e', color: '#cdd6f4',
+    width: 224, background: '#0d0d14', color: C.txt,
+    borderRight: `1px solid ${C.line}`,
     display: 'flex', flexDirection: 'column', flexShrink: 0,
   },
   sidebarHeader: {
-    padding: '20px 16px 16px', borderBottom: '1px solid #313244',
+    padding: '22px 18px 16px', borderBottom: `1px solid ${C.line}`,
   },
   sidebarTitle: {
-    fontSize: 13, fontWeight: 700, color: '#cba6f7', letterSpacing: 1,
-    textTransform: 'uppercase', margin: 0,
+    fontSize: 13, fontWeight: 600, color: C.accent, letterSpacing: 1.5,
+    textTransform: 'uppercase', margin: 0, fontFamily: 'Space Grotesk, sans-serif',
   },
-  sidebarSub: { fontSize: 11, color: '#6c7086', marginTop: 4, margin: 0 },
-  nav: { flex: 1, padding: '12px 0', overflowY: 'auto' },
+  sidebarSub: { fontSize: 11, color: C.txtMute, marginTop: 4, margin: 0 },
+  nav: { flex: 1, padding: '12px 10px', overflowY: 'auto' },
   navItem: (active) => ({
     display: 'block', width: '100%', textAlign: 'left',
-    padding: '10px 16px', border: 'none', cursor: 'pointer',
-    fontSize: 13, borderRadius: 0,
-    background: active ? '#313244' : 'transparent',
-    color: active ? '#cdd6f4' : '#9399b2',
-    borderLeft: active ? '3px solid #cba6f7' : '3px solid transparent',
-    transition: 'background 0.15s',
+    padding: '9px 12px', border: 'none', cursor: 'pointer',
+    fontSize: 12.5, borderRadius: 9, marginBottom: 2,
+    background: active ? C.accentBg : 'transparent',
+    color: active ? C.txt : C.txtMute,
+    fontWeight: active ? 600 : 500,
+    boxShadow: active ? `inset 2px 0 0 ${C.accent}` : 'none',
+    transition: 'background 0.2s ease, color 0.2s ease',
   }),
   editingLabel: {
-    padding: '8px 16px 4px', fontSize: 10, color: '#6c7086',
-    letterSpacing: 0.5, textTransform: 'uppercase',
+    padding: '10px 12px 4px', fontSize: 10, color: C.txtFaint,
+    letterSpacing: 1, textTransform: 'uppercase',
   },
   editingTitle: {
-    padding: '0 16px 8px', fontSize: 12, color: '#cdd6f4', fontWeight: 600,
+    padding: '0 12px 8px', fontSize: 12.5, color: C.txt, fontWeight: 600,
     wordBreak: 'break-all',
   },
-  divider: { borderTop: '1px solid #313244', margin: '8px 0' },
+  divider: { borderTop: `1px solid ${C.line}`, margin: '10px 6px' },
   backBtn: {
-    margin: '0 12px 12px', padding: '8px 12px', border: '1px solid #313244',
-    borderRadius: 6, background: 'transparent', color: '#6c7086',
+    margin: '0 12px 14px', padding: '8px 12px', border: `1px solid ${C.line}`,
+    borderRadius: 9, background: 'transparent', color: C.txtMute,
     cursor: 'pointer', fontSize: 12, textAlign: 'center',
   },
   userBox: {
-    margin: '12px 12px 8px', padding: '10px 12px',
-    borderTop: '1px solid #313244',
+    margin: '10px 12px 6px', padding: '12px',
+    borderTop: `1px solid ${C.line}`,
   },
-  userInfo: { fontSize: 11, color: '#9399b2', marginBottom: 8, wordBreak: 'break-all' },
-  userRole: { color: '#cba6f7', fontWeight: 600 },
+  userInfo: { fontSize: 11, color: C.txtDim, marginBottom: 9, wordBreak: 'break-all' },
+  userRole: { color: C.accent, fontWeight: 600 },
   logoutBtn: {
-    width: '100%', padding: '7px 12px', border: '1px solid #45475a',
-    borderRadius: 6, background: 'transparent', color: '#f38ba8',
-    cursor: 'pointer', fontSize: 12, textAlign: 'center',
+    width: '100%', padding: '8px 12px', border: `1px solid ${C.dangerBd}`,
+    borderRadius: 9, background: C.dangerBg, color: C.danger,
+    cursor: 'pointer', fontSize: 12, textAlign: 'center', fontWeight: 600,
   },
   main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   topbar: {
-    height: 52, background: '#fff', borderBottom: '1px solid #e0e0e0',
-    display: 'flex', alignItems: 'center', padding: '0 24px', gap: 12, flexShrink: 0,
+    height: 56, background: 'rgba(13,13,20,0.7)', borderBottom: `1px solid ${C.line}`,
+    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+    display: 'flex', alignItems: 'center', padding: '0 26px', gap: 12, flexShrink: 0,
   },
-  topbarTitle: { fontSize: 16, fontWeight: 600, margin: 0, flex: 1, color: '#1a1a1a' },
+  topbarTitle: {
+    fontSize: 16, fontWeight: 600, margin: 0, flex: 1, color: C.txt,
+    fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.01em',
+  },
   exportBtn: {
-    padding: '5px 12px', border: '1px solid #e4e4e7', borderRadius: 5,
-    background: '#fafafa', color: '#52525b', cursor: 'pointer', fontSize: 12,
+    padding: '6px 14px', border: `1px solid ${C.line}`, borderRadius: 999,
+    background: 'rgba(255,255,255,0.06)', color: C.txtDim, cursor: 'pointer', fontSize: 12, fontWeight: 600,
   },
-  content: { flex: 1, overflow: 'auto', padding: 24 },
+  content: { flex: 1, overflow: 'auto', padding: 26 },
 }
 
 function exportJson(data) {
@@ -208,7 +215,8 @@ export default function AdminApp() {
   const showExport = editing && isEditPage && page !== 'scene'
 
   return (
-    <div style={S.root}>
+    <div className="csi-admin" style={S.root}>
+      <AdminStyles />
       <aside style={S.sidebar}>
         <div style={S.sidebarHeader}>
           <p style={S.sidebarTitle}>Admin</p>

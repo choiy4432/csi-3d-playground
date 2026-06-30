@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, IconBtn, S, btn, badge } from '../shared.jsx'
+import { C, Card, IconBtn, S, btn, badge, TableEmpty } from '../shared.jsx'
 
 const KIND_OPTIONS = [
   { value: 'suspect',          label: '용의자' },
@@ -70,6 +70,22 @@ export default function NpcPage({ data, onSave }) {
             </tr>
           </thead>
           <tbody>
+            {npcs.length === 0 && !adding && (
+              <TableEmpty
+                colSpan={4}
+                icon={
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="9" cy="8" r="3.2" />
+                    <path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
+                    <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-2.2-4.4" />
+                  </svg>
+                }
+                title="등장인물이 없어요"
+                hint="용의자·목격자·안내자·사건 대상을 추가해 사건을 구성하세요."
+                action={<button style={btn('primary')} onClick={() => setAdding(true)}>+ 등장인물 추가</button>}
+              />
+            )}
             {npcs.map(npc => (
               <tr key={npc.id}>
                 {editId === npc.id ? (
@@ -122,7 +138,7 @@ export default function NpcPage({ data, onSave }) {
               </tr>
             ))}
             {adding && (
-              <tr style={{ background: '#f9f9ff' }}>
+              <tr style={{ background: C.accentBg }}>
                 <td style={S.td}>
                   <input
                     style={S.input}

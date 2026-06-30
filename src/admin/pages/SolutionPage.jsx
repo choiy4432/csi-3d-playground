@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, Field, SaveBar, IconBtn, S, btn } from '../shared.jsx'
+import { Card, Field, SaveBar, IconBtn, S, btn, TableEmpty } from '../shared.jsx'
 
 export default function SolutionPage({ data, onSave }) {
   const [solution, setSolution] = useState({ ...data.solution })
@@ -102,11 +102,20 @@ export default function SolutionPage({ data, onSave }) {
               </tr>
             ))}
             {clues.length === 0 && (
-              <tr>
-                <td colSpan={3} style={{ ...S.td, color: '#a1a1aa', textAlign: 'center', padding: 20 }}>
-                  단서가 없습니다
-                </td>
-              </tr>
+              <TableEmpty
+                colSpan={3}
+                icon={
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9.5 14.5 14.5 9.5" />
+                    <path d="M7 12 5.4 13.6a3.4 3.4 0 0 0 4.8 4.8L12 16.8" />
+                    <path d="M17 12l1.6-1.6a3.4 3.4 0 0 0-4.8-4.8L12 7.2" />
+                  </svg>
+                }
+                title="단서가 없어요"
+                hint="증거물과 범인을 잇는 단서를 추가하면 AI 추론 평가의 근거가 됩니다."
+                action={<button style={btn('primary')} onClick={addClue}>+ 단서 추가</button>}
+              />
             )}
           </tbody>
         </table>

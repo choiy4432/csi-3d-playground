@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { C } from '../shared.jsx'
 import { SCENE_SCENARIOS, ROOMS, loadRoomScenarios, saveRoomScenarios } from '../../constants/sceneScenarios'
 
+// 씬 무드 프리뷰 스와치 색상 — 실제 3D 조명을 표현하는 콘텐츠. 다크 톤 변환 대상 아님.
 const PREVIEW_COLORS = {
   night:       { bg: '#0a0a1a', accent: '#2233aa' },
   fresh_crime: { bg: '#1a0000', accent: '#ff2200' },
@@ -10,18 +12,19 @@ const PREVIEW_COLORS = {
 
 const S = {
   roomSection: {
-    marginBottom: 32,
-    padding: 20,
-    background: '#fff',
-    border: '1px solid #e0e0e0',
-    borderRadius: 10,
+    marginBottom: 28,
+    padding: '22px 24px',
+    background: C.surface,
+    border: `1px solid ${C.line}`,
+    borderRadius: 14,
+    boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -28px rgba(0,0,0,0.8)',
   },
   roomLabel: {
-    fontSize: 13, fontWeight: 700, color: '#1a1a1a',
+    fontSize: 13, fontWeight: 700, color: C.txt,
     marginBottom: 4,
   },
   roomSub: {
-    fontSize: 12, color: '#9399b2', marginBottom: 14,
+    fontSize: 12, color: C.txtMute, marginBottom: 14,
   },
   grid: {
     display: 'grid',
@@ -29,26 +32,26 @@ const S = {
     gap: 10,
   },
   card: (active) => ({
-    border: `2px solid ${active ? '#cba6f7' : '#e0e0e0'}`,
-    borderRadius: 8,
+    border: `1px solid ${active ? C.accentBd : C.line}`,
+    borderRadius: 12,
     cursor: 'pointer',
     overflow: 'hidden',
-    background: active ? '#f5f0ff' : '#fafafa',
-    transition: 'border-color 0.15s, box-shadow 0.15s',
-    boxShadow: active ? '0 0 0 3px rgba(203,166,247,0.25)' : 'none',
+    background: active ? C.accentBg : 'rgba(255,255,255,0.04)',
+    transition: 'border-color 0.4s cubic-bezier(0.32,0.72,0,1), box-shadow 0.4s cubic-bezier(0.32,0.72,0,1)',
+    boxShadow: active ? '0 0 0 3px rgba(185,164,240,0.18)' : 'none',
   }),
   defaultCard: (active) => ({
-    border: `2px solid ${active ? '#cba6f7' : '#e0e0e0'}`,
-    borderRadius: 8,
+    border: `1px solid ${active ? C.accentBd : C.line}`,
+    borderRadius: 12,
     cursor: 'pointer',
     overflow: 'hidden',
-    background: active ? '#f5f0ff' : '#fafafa',
-    transition: 'border-color 0.15s, box-shadow 0.15s',
-    boxShadow: active ? '0 0 0 3px rgba(203,166,247,0.25)' : 'none',
+    background: active ? C.accentBg : 'rgba(255,255,255,0.04)',
+    transition: 'border-color 0.4s cubic-bezier(0.32,0.72,0,1), box-shadow 0.4s cubic-bezier(0.32,0.72,0,1)',
+    boxShadow: active ? '0 0 0 3px rgba(185,164,240,0.18)' : 'none',
   }),
   preview: (id) => ({
     height: 64,
-    background: id ? (PREVIEW_COLORS[id]?.bg ?? '#111') : '#1e1e2e',
+    background: id ? (PREVIEW_COLORS[id]?.bg ?? '#111') : '#0a0a12',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   }),
   dot: (id) => ({
@@ -56,22 +59,22 @@ const S = {
     background: id ? (PREVIEW_COLORS[id]?.accent ?? '#888') : '#444',
     boxShadow: id ? `0 0 12px 6px ${PREVIEW_COLORS[id]?.accent ?? '#888'}` : 'none',
   }),
-  cardBody: { padding: '8px 12px 10px' },
+  cardBody: { padding: '9px 12px 11px' },
   cardLabel: (active) => ({
     fontSize: 13, fontWeight: 600,
-    color: active ? '#7c3aed' : '#1a1a1a',
-    marginBottom: 3,
+    color: active ? C.accent : C.txt,
+    marginBottom: 4,
   }),
   badge: (active) => ({
-    display: 'inline-block', fontSize: 11, padding: '1px 7px',
-    borderRadius: 10, fontWeight: 500,
-    background: active ? '#cba6f7' : '#f0f0f0',
-    color: active ? '#3b0764' : '#888',
+    display: 'inline-block', fontSize: 11, padding: '1px 8px',
+    borderRadius: 999, fontWeight: 600,
+    background: active ? C.accent : 'rgba(255,255,255,0.07)',
+    color: active ? '#1b1530' : C.txtMute,
   }),
   note: {
-    marginTop: 8, padding: 14, background: '#fffbeb',
-    border: '1px solid #fde68a', borderRadius: 8,
-    fontSize: 12, color: '#78350f', lineHeight: 1.6,
+    marginTop: 8, padding: 14, background: 'rgba(241,207,142,0.08)',
+    border: '1px solid rgba(241,207,142,0.28)', borderRadius: 10,
+    fontSize: 12, color: C.warn, lineHeight: 1.6,
   },
 }
 
