@@ -13,6 +13,7 @@ import PlayerController from './PlayerController'
 import DebugLight from './DebugLight'
 import { loadPlacements, loadFixedLayer } from './services/mockGenerator'
 import { DEFAULT_LIGHTING, SCENE_SCENARIOS, loadRoomScenarios } from './constants/sceneScenarios'
+import EvidenceExaminer from './EvidenceExaminer'
 
 function Kbd({ children }) {
   return (
@@ -62,6 +63,8 @@ export default function SceneWrapper() {
   const [hoveredDoor, setHoveredDoor]         = useState(null)
   const [hoveredExamine, setHoveredExamine]   = useState(null)
   const [selectedEvidenceId, setSelectedEvidenceId] = useState(null)
+  const [inspectingEvidence, setInspectingEvidence] = useState(null)
+  const [hoveredInspect, setHoveredInspect]         = useState(null)
   const playerRef = useRef()
 
   // 디버그 토글 (1), 라이트 아이솔레이션 토글 (2 — dev 모드일 때만)
@@ -105,14 +108,27 @@ export default function SceneWrapper() {
     } else if (info?.type === 'examine') {
       setHoveredId(null);       setInRange(false)
       setHoveredDoor(null);     setHoveredExamine(info)
+    } else if (info?.type === 'inspect') {
+      setHoveredId(null);       setInRange(false)
+      setHoveredDoor(null);     setHoveredExamine(null)
+      setHoveredInspect(info)
     } else {
       setHoveredId(null);       setInRange(false)
       setHoveredDoor(null);     setHoveredExamine(null)
+      setHoveredInspect(null)
     }
   }
 
   function handleExamine(examineId) {
     setSelectedEvidenceId(examineId)
+  }
+
+  function handleInspect(evidenceId) {
+    const ev = evidences.find(e => e.id === evidenceId)
+    if (ev) {
+      document.exitPointerLock()
+      setInspectingEvidence(ev)
+    }
   }
 
   function handleDoorClick(doorTo) {
@@ -209,6 +225,15 @@ export default function SceneWrapper() {
               {hoveredExamine.inRange ? '[클릭] 검사대에 올리기' : '너무 멀어요'}
             </span>
           )}
+          {hoveredInspect && (
+            <span style={{
+              fontSize: 12, fontFamily: 'sans-serif',
+              color: hoveredInspect.inRange ? '#ffee00' : '#aaaaaa',
+              background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 4,
+            }}>
+              {hoveredInspect.inRange ? '[클릭] 회전하여 검사' : '너무 멀어요'}
+            </span>
+          )}
         </div>
       )}
 
@@ -288,6 +313,16 @@ export default function SceneWrapper() {
         />
       )}
 
+      {inspectingEvidence && (
+        <EvidenceExaminer
+          evidence={inspectingEvidence}
+          onClose={() => {
+            setInspectingEvidence(null)
+            playerRef.current?.lockPointer()
+          }}
+        />
+      )}
+
       {/* 첫 시작 오버레이 */}
       {!locked && !hasStarted && !activeMiniGame && (
         <div style={{
@@ -353,12 +388,13 @@ export default function SceneWrapper() {
           <CrimeScene evidences={currentRoom === 1 ? evidences : []} hoveredId={hoveredId} inRange={inRange} />
           <PlayerController
             ref={playerRef}
-            paused={!!activeMiniGame || debugMode}
+            paused={!!activeMiniGame || !!inspectingEvidence || debugMode}
             onLockChange={handleLockChange}
             onHover={handleHover}
             onInteract={handleInteract}
             onDoorClick={handleDoorClick}
             onExamine={handleExamine}
+            onInspect={handleInspect}
           />
         </Physics>
       </Canvas>

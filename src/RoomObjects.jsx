@@ -39,6 +39,7 @@ export function Room2Objects({ collectedEvidences = [], selectedEvidenceId = nul
           key={`center-${selectedEvidence.id}`}
           file={selectedEvidence.file}
           position={[0, TABLE_TOP_Y, 0.5]}
+          inspectId={selectedEvidence.id}
         />
       )}
 

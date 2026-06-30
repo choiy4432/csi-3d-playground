@@ -4,13 +4,18 @@ import { useGLTF } from '@react-three/drei'
 // 방 2 검사대 위에 채증 완료된 증거물을 정적으로 표시하는 컴포넌트
 // EvidenceObject와 달리 물리/인터랙션 없음
 // examineId를 전달하면 레이캐스트 가능한 invisible hit box가 추가됨 (오른쪽 테이블용)
-export default function EvidenceDisplay({ file, position, examineId = null, isDimmed = false }) {
+export default function EvidenceDisplay({ file, position, examineId = null, inspectId = null, isDimmed = false }) {
   const { scene } = useGLTF(`/models/${file}`)
-  const hitRef    = useRef()
+  const hitRef     = useRef()
+  const inspectRef = useRef()
 
   useEffect(() => {
-    if (hitRef.current) hitRef.current.userData.examineId = examineId
+    if (hitRef.current)     hitRef.current.userData.examineId = examineId
   }, [examineId])
+
+  useEffect(() => {
+    if (inspectRef.current) inspectRef.current.userData.inspectId = inspectId
+  }, [inspectId])
 
   const model = useMemo(() => {
     const clone = scene.clone()
@@ -44,6 +49,12 @@ export default function EvidenceDisplay({ file, position, examineId = null, isDi
       <primitive object={model} scale={1} />
       {examineId != null && (
         <mesh ref={hitRef} position={[0, 0.2, 0]}>
+          <boxGeometry args={[0.5, 0.4, 0.5]} />
+          <meshBasicMaterial visible={false} />
+        </mesh>
+      )}
+      {inspectId != null && (
+        <mesh ref={inspectRef} position={[0, 0.2, 0]}>
           <boxGeometry args={[0.5, 0.4, 0.5]} />
           <meshBasicMaterial visible={false} />
         </mesh>

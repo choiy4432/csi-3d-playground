@@ -12,7 +12,7 @@ const INTERACT_DIST = 2.5
 const EXAMINE_DIST  = 3.5
 
 const PlayerController = forwardRef(function PlayerController(
-  { paused, onLockChange, onHover, onInteract, onDoorClick, onExamine },
+  { paused, onLockChange, onHover, onInteract, onDoorClick, onExamine, onInspect },
   ref
 ) {
   const { camera, gl } = useThree()
@@ -43,6 +43,9 @@ const PlayerController = forwardRef(function PlayerController(
       yaw.current   = facingYaw
       pitch.current = 0
     },
+    lockPointer() {
+      gl.domElement.requestPointerLock()
+    },
   }))
 
   useEffect(() => {
@@ -71,6 +74,7 @@ const PlayerController = forwardRef(function PlayerController(
         if (h?.type === 'evidence' && h?.inRange) onInteract?.(h.id)
         else if (h?.type === 'door'    && h?.inRange) onDoorClick?.(h.doorTo)
         else if (h?.type === 'examine' && h?.inRange) onExamine?.(h.examineId)
+        else if (h?.type === 'inspect' && h?.inRange) onInspect?.(h.inspectId)
       }
     }
 
@@ -87,7 +91,7 @@ const PlayerController = forwardRef(function PlayerController(
       window.removeEventListener('keyup',   onKeyUp)
       document.removeEventListener('mousemove', onMouseMove)
     }
-  }, [camera, gl, onLockChange, onInteract, onDoorClick, onExamine])
+  }, [camera, gl, onLockChange, onInteract, onDoorClick, onExamine, onInspect])
 
   useFrame(({ raycaster, scene }) => {
     if (!bodyRef.current) return
@@ -105,18 +109,21 @@ const PlayerController = forwardRef(function PlayerController(
     const hit = hits.find((h) =>
       h.object.userData.evidenceId !== undefined ||
       h.object.userData.doorTo     !== undefined ||
-      h.object.userData.examineId  !== undefined
+      h.object.userData.examineId  !== undefined ||
+      h.object.userData.inspectId  !== undefined
     )
 
     let newInfo = null
     if (hit) {
       const ud = hit.object.userData
       if (ud.evidenceId !== undefined) {
-        newInfo = { type: 'evidence', id: ud.evidenceId,   inRange: hit.distance <= INTERACT_DIST }
+        newInfo = { type: 'evidence', id: ud.evidenceId,       inRange: hit.distance <= INTERACT_DIST }
       } else if (ud.doorTo !== undefined) {
-        newInfo = { type: 'door',     doorTo: ud.doorTo,   inRange: hit.distance <= INTERACT_DIST }
-      } else {
+        newInfo = { type: 'door',     doorTo: ud.doorTo,       inRange: hit.distance <= INTERACT_DIST }
+      } else if (ud.examineId !== undefined) {
         newInfo = { type: 'examine',  examineId: ud.examineId, inRange: hit.distance <= EXAMINE_DIST }
+      } else {
+        newInfo = { type: 'inspect',  inspectId: ud.inspectId, inRange: hit.distance <= EXAMINE_DIST }
       }
     }
 
@@ -126,7 +133,8 @@ const PlayerController = forwardRef(function PlayerController(
     if (newInfo) {
       if      (newInfo.type === 'evidence') newKey = `ev-${newInfo.id}-${newInfo.inRange}`
       else if (newInfo.type === 'door')     newKey = `door-${newInfo.doorTo}-${newInfo.inRange}`
-      else                                  newKey = `exam-${newInfo.examineId}-${newInfo.inRange}`
+      else if (newInfo.type === 'examine')  newKey = `exam-${newInfo.examineId}-${newInfo.inRange}`
+      else                                  newKey = `inspect-${newInfo.inspectId}-${newInfo.inRange}`
     }
     if (newKey !== prevHovered.current) {
       prevHovered.current = newKey

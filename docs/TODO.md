@@ -46,6 +46,16 @@
 
 <!-- 실행 가능하며 아직 시작하지 않은 항목 -->
 - [ ] admin page figma integration
+- [ ] skybox 구현
+- [ ] 증거물 2번 방에서 자체 pivot 설정하여 회전 가능하게 구현
+- [ ] 어드민 페이지 UX 개선 (클릭만으로 제어 — 드래그·복잡한 조작 최소화) _(추후 고도화 예정)_
+- [ ] 콘텐츠 게시 관리 — 선생님/운영자 계정별 시나리오 격리 및 게시 (활성화 + 세션코드 발급)
+  - `src/constants/users.js` — id/pw/role 하드코딩 유저 목록
+  - `src/services/db.js` — localStorage 추상화 레이어 (`getScenarios`, `publishScenario`, `getSessions` 등); 추후 Supabase로 교체 시 이 파일만 수정
+  - localStorage 키 네임스페이싱 (`csi_scenarios_u-01` 등) — 동일 브라우저 다중 계정 충돌 방지
+  - 게시 내역 데이터 형식을 Supabase 테이블 구조로 설계 (`id, user_id, scenario_id, session_code, published_at, status`)
+- [ ] light test 페이지 — pinpoint 조명·reflection 등, `/#/test` 해시 라우트로 별도 구현
+- [ ] 고정층 설정 완료 시 페르소나 카드 생성하여 표시 — 대상 학년·난이도·용의자 수·훼손율·사건 개요·등장인물·정답 경로를 한 장 요약으로 렌더링
 
 
 ---
