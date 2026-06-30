@@ -79,6 +79,10 @@
 ## 🚧 보류
 
 <!-- 선행 조건이 필요하거나 실행 불가한 항목 (이유 명시) -->
+- [ ] 멀티 시나리오 멀티탭 동기화 _(보류: Supabase 마이그레이션 때 실시간 구독으로 해결)_
+  - 현재 ProjectsPage는 force-refresh 기반 — 다른 탭에서 시나리오 생성/삭제/활성변경 시 갱신 안 됨
+  - localStorage `csi_scenario_index` / `csi_active_scenario_id` 에 storage 이벤트 구독 필요 (또는 useSyncExternalStore)
+  - localStorage 단계에선 우선순위 낮음. Supabase realtime 으로 대체될 영역
 - [ ] 어드민 인증 → Supabase 테이블 + Edge Function 교체 _(보류: fixedLayer → Supabase 마이그레이션 완료 후)_
   - `users` 테이블 (`username`, `pw_hash`, `role`) — 이메일 없이 개인정보 수집 없음
   - Edge Function으로 서버사이드 검증 — pw_hash가 클라이언트에 절대 노출 안 됨
