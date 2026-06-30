@@ -14,21 +14,111 @@ import ScenePage from './pages/ScenePage.jsx'
 import PreviewPage from './pages/PreviewPage.jsx'
 import InfoPage from './pages/InfoPage.jsx'
 
+// 페이지 아이콘 — 일관된 1.5 stroke 커스텀 라인 세트 (이모지 대체).
+const ICON_PATHS = {
+  projects: <path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h3l1.8 2H18a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 18 18H5.5A1.5 1.5 0 0 1 4 16.5Z" />,
+  scenario: (
+    <>
+      <path d="M13.5 4H7a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 7 20h10a1.5 1.5 0 0 0 1.5-1.5V9Z" />
+      <path d="M13.5 4v5h5" />
+      <path d="M8.5 13h7M8.5 16h5" />
+    </>
+  ),
+  npc: (
+    <>
+      <circle cx="9" cy="8.5" r="3" />
+      <path d="M3.8 18.5a5.2 5.2 0 0 1 10.4 0" />
+      <path d="M15.5 6a3 3 0 0 1 0 5.6" />
+      <path d="M17.2 18.5a5.2 5.2 0 0 0-2-4.1" />
+    </>
+  ),
+  solution: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="3.4" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </>
+  ),
+  evidence: (
+    <>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m20 20-3.6-3.6" />
+    </>
+  ),
+  slots: (
+    <>
+      <path d="M12 4.5l1.7 4.3 4.3 1.7-4.3 1.7L12 16.5l-1.7-4.3L6 10.5l4.3-1.7Z" />
+      <path d="M18.5 5l.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z" />
+    </>
+  ),
+  casetype: (
+    <>
+      <path d="M4.5 12.8V6A1.5 1.5 0 0 1 6 4.5h6.8a1.5 1.5 0 0 1 1.06.44l5.2 5.2a1.5 1.5 0 0 1 0 2.12l-6.8 6.8a1.5 1.5 0 0 1-2.12 0l-5.2-5.2A1.5 1.5 0 0 1 4.5 12.8Z" />
+      <circle cx="8.5" cy="8.5" r="1.3" />
+    </>
+  ),
+  scene: (
+    <>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M4 9.5h16M4 14.5h16M9 5v14M15 5v14" />
+    </>
+  ),
+  preview: (
+    <>
+      <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="2.6" />
+    </>
+  ),
+  info: (
+    <>
+      <path d="M12 6.8C10.6 5.6 8.6 5 6.2 5A1.2 1.2 0 0 0 5 6.2v10.3a1.2 1.2 0 0 0 1.2 1.2c2.4 0 4.4.6 5.8 1.8" />
+      <path d="M12 6.8C13.4 5.6 15.4 5 17.8 5A1.2 1.2 0 0 1 19 6.2v10.3a1.2 1.2 0 0 1-1.2 1.2c-2.4 0-4.4.6-5.8 1.8" />
+      <path d="M12 6.8V20.1" />
+    </>
+  ),
+}
+
+function NavIcon({ name, size = 16 }) {
+  const paths = ICON_PATHS[name]
+  if (!paths) return null
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      style={{ flexShrink: 0 }} aria-hidden="true">
+      {paths}
+    </svg>
+  )
+}
+
+// 브랜드 마크 — 포렌식 지문 엠블럼.
+function Fingerprint({ size = 19 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6 10.5a6 6 0 0 1 11.3-2.7" />
+      <path d="M8.7 13a3.3 3.3 0 0 1 6.5.8c0 2-.3 4-1 5.9" />
+      <path d="M12 13.3c0 2.3-.4 4.5-1.2 6.5" />
+      <path d="M6.3 14c.3-1 .4-2 .4-3" />
+      <path d="M17.4 11.4c0 2.6-.6 5.1-1.7 7.4" />
+    </svg>
+  )
+}
+
 // 시나리오 편집 nav (시나리오를 연 상태에서만 표시)
 const NAV_EDIT = [
-  { key: 'scenario', label: '📋 시나리오 정보' },
-  { key: 'npc',      label: '👥 등장인물 관리' },
-  { key: 'solution', label: '🎯 정답 설정' },
-  { key: 'evidence', label: '🔍 증거물 목록' },
-  { key: 'slots',    label: '🤖 AI 생성 설정' },
-  { key: 'casetype', label: '🗂️ 사건 유형 관리' },
-  { key: 'scene',    label: '🎬 씬 시나리오' },
-  { key: 'preview',  label: '👁️ 미리보기' },
+  { key: 'scenario', label: '시나리오 정보' },
+  { key: 'npc',      label: '등장인물 관리' },
+  { key: 'solution', label: '정답 설정' },
+  { key: 'evidence', label: '증거물 목록' },
+  { key: 'slots',    label: 'AI 생성 설정' },
+  { key: 'casetype', label: '사건 유형 관리' },
+  { key: 'scene',    label: '씬 시나리오' },
+  { key: 'preview',  label: '미리보기' },
 ]
 
 const LABELS = {
-  projects: '📁 프로젝트 목록',
-  info: '📖 개발자 정보',
+  projects: '프로젝트 목록',
+  info: '개발자 정보',
   ...Object.fromEntries(NAV_EDIT.map((n) => [n.key, n.label])),
 }
 
@@ -42,17 +132,30 @@ const S = {
     borderRight: `1px solid ${C.line}`,
     display: 'flex', flexDirection: 'column', flexShrink: 0,
   },
-  sidebarHeader: {
-    padding: '22px 18px 16px', borderBottom: `1px solid ${C.line}`,
+  brand: {
+    display: 'flex', alignItems: 'center', gap: 11, width: '100%',
+    padding: '17px 16px 16px', textAlign: 'left',
+    background: 'none', border: 'none', borderBottom: `1px solid ${C.line}`,
+    cursor: 'pointer',
   },
-  sidebarTitle: {
-    fontSize: 13, fontWeight: 600, color: C.accent, letterSpacing: 1.5,
-    textTransform: 'uppercase', margin: 0, fontFamily: 'Space Grotesk, sans-serif',
+  brandMark: {
+    width: 36, height: 36, flexShrink: 0, borderRadius: 11,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.accent,
+    background: 'linear-gradient(160deg, rgba(185,164,240,0.24), rgba(185,164,240,0.05))',
+    border: `1px solid ${C.accentBd}`,
+    boxShadow: '0 1px 1px rgba(255,255,255,0.10) inset, 0 6px 16px -8px rgba(150,124,232,0.5)',
   },
-  sidebarSub: { fontSize: 11, color: C.txtMute, marginTop: 4, margin: 0 },
+  brandText: { display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 },
+  brandWord: {
+    fontFamily: 'Space Grotesk, sans-serif', fontSize: 15, fontWeight: 600,
+    color: C.txt, letterSpacing: '-0.02em', lineHeight: 1,
+  },
+  brandSub: {
+    fontSize: 10.5, color: C.txtMute, letterSpacing: '0.05em', lineHeight: 1,
+  },
   nav: { flex: 1, padding: '12px 10px', overflowY: 'auto' },
   navItem: (active) => ({
-    display: 'block', width: '100%', textAlign: 'left',
+    display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
     padding: '9px 12px', border: 'none', cursor: 'pointer',
     fontSize: 12.5, borderRadius: 9, marginBottom: 2,
     background: active ? C.accentBg : 'transparent',
@@ -95,6 +198,7 @@ const S = {
   topbarTitle: {
     fontSize: 16, fontWeight: 600, margin: 0, flex: 1, color: C.txt,
     fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.01em',
+    display: 'flex', alignItems: 'center', gap: 10,
   },
   exportBtn: {
     padding: '6px 14px', border: `1px solid ${C.line}`, borderRadius: 999,
@@ -218,13 +322,27 @@ export default function AdminApp() {
     <div className="csi-admin" style={S.root}>
       <AdminStyles />
       <aside style={S.sidebar}>
-        <div style={S.sidebarHeader}>
-          <p style={S.sidebarTitle}>Admin</p>
-          <p style={S.sidebarSub}>고정층 에디터</p>
-        </div>
+        <button
+          className="csi-brand"
+          style={S.brand}
+          onClick={() => setPage('projects')}
+          title="프로젝트 목록으로"
+          aria-label="CSI Admin — 프로젝트 목록으로"
+        >
+          <span className="csi-brand__mark" style={S.brandMark}>
+            <Fingerprint />
+          </span>
+          <span style={S.brandText}>
+            <span style={S.brandWord}>
+              CSI <span style={{ color: C.txtFaint, fontWeight: 400 }}>Admin</span>
+            </span>
+            <span style={S.brandSub}>고정층 에디터</span>
+          </span>
+        </button>
         <nav style={S.nav}>
           <button style={S.navItem(page === 'projects')} onClick={() => setPage('projects')}>
-            📁 프로젝트 목록
+            <NavIcon name="projects" />
+            <span>프로젝트 목록</span>
           </button>
 
           {editing && (
@@ -238,7 +356,8 @@ export default function AdminApp() {
                   style={S.navItem(page === item.key)}
                   onClick={() => setPage(item.key)}
                 >
-                  {item.label}
+                  <NavIcon name={item.key} />
+                  <span>{item.label}</span>
                 </button>
               ))}
             </>
@@ -246,7 +365,8 @@ export default function AdminApp() {
 
           <div style={S.divider} />
           <button style={S.navItem(page === 'info')} onClick={() => setPage('info')}>
-            📖 개발자 정보
+            <NavIcon name="info" />
+            <span>개발자 정보</span>
           </button>
         </nav>
 
@@ -265,7 +385,12 @@ export default function AdminApp() {
 
       <main style={S.main}>
         <div style={S.topbar}>
-          <h1 style={S.topbarTitle}>{LABELS[page] ?? '프로젝트 목록'}</h1>
+          <h1 style={S.topbarTitle}>
+            <span style={{ color: C.accent, display: 'flex' }}>
+              <NavIcon name={page} size={18} />
+            </span>
+            <span>{LABELS[page] ?? '프로젝트 목록'}</span>
+          </h1>
           {showExport && (
             <button style={S.exportBtn} onClick={() => exportJson(data)}>
               JSON 내보내기
@@ -273,7 +398,9 @@ export default function AdminApp() {
           )}
         </div>
         <div style={S.content}>
-          {content}
+          <div key={page} className="csi-page">
+            {content}
+          </div>
         </div>
       </main>
     </div>

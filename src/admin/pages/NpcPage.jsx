@@ -116,8 +116,8 @@ export default function NpcPage({ data, onSave }) {
                       />
                     </td>
                     <td style={S.td}>
-                      <IconBtn icon="✓" title="저장" onClick={commitEdit} />
-                      <IconBtn icon="✕" title="취소" onClick={cancelEdit} />
+                      <IconBtn name="confirm" title="저장" onClick={commitEdit} />
+                      <IconBtn name="cancel" title="취소" onClick={cancelEdit} />
                     </td>
                   </>
                 ) : (
@@ -130,8 +130,8 @@ export default function NpcPage({ data, onSave }) {
                     </td>
                     <td style={S.td}>{npc.profile}</td>
                     <td style={S.td}>
-                      <IconBtn icon="✏️" title="편집" onClick={() => startEdit(npc)} />
-                      <IconBtn icon="🗑️" title="삭제" onClick={() => handleDelete(npc.id)} danger />
+                      <IconBtn name="edit" title="편집" onClick={() => startEdit(npc)} />
+                      <IconBtn name="delete" title="삭제" onClick={() => handleDelete(npc.id)} danger />
                     </td>
                   </>
                 )}
@@ -167,8 +167,8 @@ export default function NpcPage({ data, onSave }) {
                   />
                 </td>
                 <td style={S.td}>
-                  <IconBtn icon="✓" title="추가" onClick={handleAdd} />
-                  <IconBtn icon="✕" title="취소" onClick={() => setAdding(false)} />
+                  <IconBtn name="confirm" title="추가" onClick={handleAdd} />
+                  <IconBtn name="cancel" title="취소" onClick={() => setAdding(false)} />
                 </td>
               </tr>
             )}

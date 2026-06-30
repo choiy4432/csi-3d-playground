@@ -135,26 +135,87 @@ export function Field({ label, children, hint }) {
 export function SaveBar({ onSave, saved }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
-      <button style={btn('primary')} onClick={onSave}>
-        {saved ? '✓ 저장됨' : '저장'}
+      <button style={{ ...btn('primary'), display: 'inline-flex', alignItems: 'center', gap: 7 }} onClick={onSave}>
+        {saved ? <><ActionIcon name="confirm" size={15} />저장됨</> : '저장'}
       </button>
     </div>
   )
 }
 
-export function IconBtn({ icon, title, onClick, danger }) {
+// 액션 아이콘 — 1.5 stroke 통일 라인 세트 (이모지 대체).
+const ACTION_PATHS = {
+  edit: (
+    <>
+      <path d="M16.5 4.5a2 2 0 0 1 2.8 2.8l-10 10-3.8 1 1-3.8Z" />
+      <path d="M14 7 17 10" />
+    </>
+  ),
+  delete: (
+    <>
+      <path d="M5 7h14" />
+      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+      <path d="M6.5 7l.8 11A1.5 1.5 0 0 0 8.8 19.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-11" />
+      <path d="M10 10.5v5M14 10.5v5" />
+    </>
+  ),
+  duplicate: (
+    <>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5V5A1.5 1.5 0 0 1 4.5 3.5H13A1.5 1.5 0 0 1 14.5 5v.5" />
+    </>
+  ),
+  confirm: <path d="M5 12.5 10 17.5 19 6.5" />,
+  cancel: <path d="M6 6 18 18M18 6 6 18" />,
+  lock: (
+    <>
+      <rect x="5.5" y="10.5" width="13" height="9" rx="2" />
+      <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M4 12h16" />
+      <path d="M12 4c2.5 2.2 2.5 13.8 0 16M12 4c-2.5 2.2-2.5 13.8 0 16" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M4.5 9a7.5 7.5 0 0 1 12.6-2.8L20 9" />
+      <path d="M20 4.5V9h-4.5" />
+      <path d="M19.5 15a7.5 7.5 0 0 1-12.6 2.8L4 15" />
+      <path d="M4 19.5V15h4.5" />
+    </>
+  ),
+}
+
+export function ActionIcon({ name, size = 15 }) {
+  const paths = ACTION_PATHS[name]
+  if (!paths) return null
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: 'block' }} aria-hidden="true">
+      {paths}
+    </svg>
+  )
+}
+
+export function IconBtn({ icon, name, title, onClick, danger }) {
   return (
     <button
-      title={title}
+      aria-label={title}
+      data-tip={title}
       onClick={onClick}
       style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         background: 'none', border: 'none', cursor: 'pointer',
-        fontSize: 14, padding: '3px 6px', borderRadius: 7,
+        fontSize: 14, padding: 6, borderRadius: 7, verticalAlign: 'middle',
         color: danger ? C.danger : C.txtMute,
         transition: 'background 0.2s ease, color 0.2s ease',
       }}
     >
-      {icon}
+      {name ? <ActionIcon name={name} /> : icon}
     </button>
   )
 }
@@ -262,6 +323,57 @@ const ADMIN_CSS = `
   box-shadow: 0 0 0 3px rgba(185,164,240,0.32) !important;
 }
 
+.csi-brand__mark { transition: transform 0.45s cubic-bezier(0.32,0.72,0,1); }
+.csi-brand:hover .csi-brand__mark { transform: translateY(-1px) scale(1.04); }
+
+/* 프로젝트 제목 — 클릭 시 열기 */
+.csi-admin .csi-titlelink { transition: color 0.2s ease; }
+.csi-admin .csi-titlelink:hover { color: ${C.accent}; text-decoration: underline; text-underline-offset: 3px; }
+.csi-admin .csi-titlelink:active { transform: none; }
+
+/* 아이콘 버튼 hint — 즉시 뜨는 커스텀 툴팁 */
+.csi-admin [data-tip] { position: relative; }
+.csi-admin [data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: #0d0d14;
+  border: 1px solid ${C.line};
+  color: ${C.txt};
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 10px 24px -10px rgba(0,0,0,0.75);
+  transition: opacity 0.18s ease, transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  z-index: 20;
+}
+.csi-admin [data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  border: 4px solid transparent;
+  border-top-color: #0d0d14;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  z-index: 20;
+}
+.csi-admin [data-tip]:hover::after,
+.csi-admin [data-tip]:focus-visible::after,
+.csi-admin [data-tip]:hover::before,
+.csi-admin [data-tip]:focus-visible::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .csi-admin tbody tr { transition: background 0.18s ease; }
 .csi-admin tbody tr:hover { background: ${C.surfaceUp}; }
 .csi-admin tbody tr.csi-nohover:hover { background: transparent; }
@@ -269,6 +381,14 @@ const ADMIN_CSS = `
 .csi-empty { animation: csiEmptyIn 0.6s cubic-bezier(0.22,1,0.36,1) both; }
 @keyframes csiEmptyIn {
   from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 페이지 전환 enter — fill 미지정(none): 종료 후 transform이 남지 않아
+   하위 position:fixed 모달(EvidenceModal)의 컨테이닝 블록을 깨지 않는다. */
+.csi-page { animation: csiPageIn 0.45s cubic-bezier(0.22,1,0.36,1); }
+@keyframes csiPageIn {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -300,6 +420,9 @@ const ADMIN_CSS = `
 .csi-admin ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); background-clip: padding-box; }
 
 @media (prefers-reduced-motion: reduce) {
-  .csi-admin * { transition: none !important; }
+  .csi-admin *, .csi-page, .csi-empty, .csi-skeleton::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 `

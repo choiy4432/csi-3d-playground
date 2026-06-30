@@ -220,8 +220,8 @@ export default function EvidencePage({ data, onSave }) {
                   <span style={{ color: C.txtDim }}>{ev.miniGame.label}</span>
                 </td>
                 <td style={S.td}>
-                  <IconBtn icon="✏️" title="편집" onClick={() => openEdit(ev)} />
-                  <IconBtn icon="🗑️" title="삭제" onClick={() => handleDelete(ev.id)} danger />
+                  <IconBtn name="edit" title="편집" onClick={() => openEdit(ev)} />
+                  <IconBtn name="delete" title="삭제" onClick={() => handleDelete(ev.id)} danger />
                 </td>
               </tr>
             ))}
