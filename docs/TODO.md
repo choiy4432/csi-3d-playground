@@ -107,6 +107,22 @@
 ## ✅ 완료
 
 <!-- 완료된 항목 -->
+
+<details>
+<summary>📌 어드민 에디터 UIUX 개편 (v0.3.1) (미완료 0 / 7)</summary>
+
+> 어드민 에디터 전반 다크 통일 · 프리미엄 리디자인. v0.3.1로 배포 완료.
+
+- [x] 로그인 화면 프리미엄 리디자인 (이중 베젤·메시 글로우·마이크로 모션)
+- [x] 어드민 에디터 전체 다크 통일 (디자인 토큰 중앙화 shared.jsx + 전역 스타일)
+- [x] 빈 상태(EmptyState)·3D 미리보기 로딩 스켈레톤
+- [x] 페이지 전환 enter 애니메이션
+- [x] 페이지 제목/액션 이모지 → 커스텀 라인 SVG 아이콘 통일
+- [x] 사이드바 브랜드 로크업 (지문 엠블럼 + CSI Admin)
+- [x] 프로젝트 목록 제목 클릭 열기 + 액션 아이콘 커스텀 툴팁
+
+</details>
+
 - [x] space 추가하여 onclick으로 방 전환할 때, 양 방에서 동일 object 배치 시 scale 변화 +@ 관측
 - [x] light test 페이지 — pinpoint 조명·reflection 등, `/#/testroom` 해시 라우트로 TestRoomScene 구현 완료
 
