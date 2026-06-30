@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import initialData from '../data/fixedLayer.json'
+import { getSession, logout, refreshActivity, SESSION_KEY } from '../services/auth'
+import LoginPage from './LoginPage.jsx'
 import ScenarioPage from './pages/ScenarioPage.jsx'
 import NpcPage from './pages/NpcPage.jsx'
 import SolutionPage from './pages/SolutionPage.jsx'
@@ -52,8 +54,19 @@ const S = {
     transition: 'background 0.15s',
   }),
   backBtn: {
-    margin: '12px', padding: '8px 12px', border: '1px solid #313244',
+    margin: '0 12px 12px', padding: '8px 12px', border: '1px solid #313244',
     borderRadius: 6, background: 'transparent', color: '#6c7086',
+    cursor: 'pointer', fontSize: 12, textAlign: 'center',
+  },
+  userBox: {
+    margin: '12px 12px 8px', padding: '10px 12px',
+    borderTop: '1px solid #313244',
+  },
+  userInfo: { fontSize: 11, color: '#9399b2', marginBottom: 8, wordBreak: 'break-all' },
+  userRole: { color: '#cba6f7', fontWeight: 600 },
+  logoutBtn: {
+    width: '100%', padding: '7px 12px', border: '1px solid #45475a',
+    borderRadius: 6, background: 'transparent', color: '#f38ba8',
     cursor: 'pointer', fontSize: 12, textAlign: 'center',
   },
   main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
@@ -93,9 +106,56 @@ function exportJson(data) {
 }
 
 export default function AdminApp() {
+  const [session, setSession] = useState(getSession)
   const [page, setPage] = useState('scenario')
   const [data, setData] = useState(loadData)
   const current = NAV_ITEMS.find(n => n.key === page)
+  const lastRefresh = useRef(0)
+
+  // 사용자 활동 감지 → 세션 활동 시각 갱신 (30초 쓰로틀)
+  // keydown/click 만 활동으로 간주 (mousemove 는 idle 만료를 무력화하므로 제외).
+  useEffect(() => {
+    if (!session) return
+    const onActivity = () => {
+      // 이미 만료됐으면 즉시 로그인 화면으로 (1분 interval 대기 없이)
+      if (!getSession()) { setSession(null); return }
+      const now = Date.now()
+      if (now - lastRefresh.current < 30 * 1000) return
+      lastRefresh.current = now
+      refreshActivity()
+    }
+    window.addEventListener('keydown', onActivity)
+    window.addEventListener('click', onActivity)
+    return () => {
+      window.removeEventListener('keydown', onActivity)
+      window.removeEventListener('click', onActivity)
+    }
+  }, [session])
+
+  // 1분마다 만료 체크 → 만료 시 자동 로그아웃
+  useEffect(() => {
+    if (!session) return
+    const timer = setInterval(() => {
+      if (!getSession()) setSession(null)
+    }, 60 * 1000)
+    return () => clearInterval(timer)
+  }, [session])
+
+  // 다른 탭에서 로그인/로그아웃/만료 시 현재 탭 동기화
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === SESSION_KEY) setSession(getSession())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  const handleLogout = () => {
+    logout()
+    setSession(null)
+  }
+
+  if (!session) return <LoginPage onLogin={setSession} />
 
   const handleSave = (updated) => {
     setData(updated)
@@ -136,6 +196,14 @@ export default function AdminApp() {
             </div>
           ))}
         </nav>
+        <div style={S.userBox}>
+          <p style={S.userInfo}>
+            {session.userId} · <span style={S.userRole}>{session.role}</span>
+          </p>
+          <button style={S.logoutBtn} onClick={handleLogout}>
+            로그아웃
+          </button>
+        </div>
         <button style={S.backBtn} onClick={() => { window.location.href = '/' }}>
           ← 플레이어 씬으로
         </button>
